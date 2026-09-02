@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from accounts.models import User
+from accounts.models import User, Profile
 from django.contrib.auth.password_validation import validate_password as validate
 from django.contrib.auth import authenticate
 
@@ -15,6 +15,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
+        Profile.objects.create(
+            user=user
+        )
         return user
 
 class LoginSerializer(serializers.Serializer):
@@ -31,3 +34,17 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = [
+            'full_name',
+            'bio',
+            'experience',
+            'school',
+            'graduation_year',
+            'course_of_study',
+            'github',
+            'portfolio'
+        ]

@@ -27,12 +27,12 @@ class User(AbstractUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=100, null=False)
-    bio = models.TextField()
-    experience = models.TextField()
-    school = models.CharField(max_length=100)
-    graduation_year = models.IntegerField(blank=True)
-    course_of_study = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=100, blank=True)
+    bio = models.TextField(blank=True)
+    experience = models.TextField(blank=True)
+    school = models.CharField(max_length=100, blank=True)
+    graduation_year = models.IntegerField(blank=True, null=True)
+    course_of_study = models.CharField(max_length=100, blank=True)
     github = models.URLField(max_length=200, blank=True)
     portfolio = models.URLField(max_length=200, blank=True)
 
