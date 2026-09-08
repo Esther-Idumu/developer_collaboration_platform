@@ -24,9 +24,9 @@
   --font-bold: 700;
 
   /* UI */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
 }
 
 * {
