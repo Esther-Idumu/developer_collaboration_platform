@@ -42,7 +42,7 @@ body {
 }
 
 a {
-  color: var(--primary-blue);
+  color: var(--indigo-accent);
   text-decoration: none;
 }
 
