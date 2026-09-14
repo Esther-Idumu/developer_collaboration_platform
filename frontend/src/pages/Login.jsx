@@ -18,10 +18,6 @@ function Login() {
 
                         <h1>Log in to DevLink.</h1>
 
-                        <p>
-                            Continue building, collaborating, and connecting
-                            with developers.
-                        </p>
                     </div>
 
                     <form className="login-form">
@@ -73,19 +69,12 @@ function Login() {
 
                 <div className="visual-content">
 
-                    <p className="eyebrow">BUILD TOGETHER</p>
-
                     <h2>
                         Great projects
                         <span> start with great people.</span>
                     </h2>
 
-                    <p>
-                        Discover developers, join projects, and turn ideas
-                        into something real.
-                    </p>
-
-                    <div className="login-project-preview">
+                <div className="login-project-preview">
 
                     <div className="preview-header">
                         <span className="status-dot"></span>
