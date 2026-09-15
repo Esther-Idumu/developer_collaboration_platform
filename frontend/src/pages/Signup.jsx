@@ -50,7 +50,11 @@ function Signup() {
             const data = await response.json();
 
             if (response.ok) {
-                navigate("/login");
+                navigate("/check-email", {
+                    state: {
+                        email:email
+                    }
+                });
                 return;
             }
 

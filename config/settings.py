@@ -134,3 +134,7 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+DEFAULT_FROM_EMAIL = "DevLink <noreply@devlink.com>"
+
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24

@@ -21,6 +21,7 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True, null=False, blank=False)
+    is_email_verified = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     objects = UserManager()
     REQUIRED_FIELDS = []
