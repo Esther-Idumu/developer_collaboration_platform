@@ -25,13 +25,13 @@ def send_verification_email(user):
     send_mail(
         subject="Verify your DevLink email",
         message=(
-            f"Hi,\n\n"
-            f"Thanks for joining DevLink.\n\n"
-            f"Please verify your email by clicking the link below:\n\n"
+            "Hi,\n\n"
+            "Thanks for joining DevLink.\n\n"
+            "Please verify your email by clicking the link below:\n\n"
             f"{verification_url}\n\n"
-            f"This link expires in 24 hours.\n\n"
-            f"If you didn't create a DevLink account, "
-            f"you can ignore this email."
+            "This link expires in 24 hours.\n\n"
+            "If you didn't create a DevLink account, "
+            "you can ignore this email."
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],

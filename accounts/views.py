@@ -63,16 +63,12 @@ class MeView(APIView):
         })
 
 class VerifyEmailView(APIView):
-
     def get(self, request, uidb64, token):
-
         try:
             uid = force_str(
                 urlsafe_base64_decode(uidb64)
             )
-
             user = User.objects.get(pk=uid)
-
         except (User.DoesNotExist, ValueError, TypeError, OverflowError):
             return Response(
                 {"error": "Invalid verification link."},
@@ -90,7 +86,6 @@ class VerifyEmailView(APIView):
                 {"error": "Invalid or expired verification link."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         user.is_email_verified = True
         user.save(update_fields=["is_email_verified"])
 
@@ -100,9 +95,7 @@ class VerifyEmailView(APIView):
         )
 
 class ResendVerificationView(APIView):
-
     def post(self, request):
-
         serializer = ResendVerificationSerializer(
             data=request.data
         )
@@ -112,12 +105,10 @@ class ResendVerificationView(APIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         email = serializer.validated_data['email']
 
         try:
             user = User.objects.get(email=email)
-
         except User.DoesNotExist:
             return Response(
                 {
@@ -136,7 +127,6 @@ class ResendVerificationView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         send_verification_email(user)
 
         return Response(

@@ -62,6 +62,5 @@ class ProfileSerializer(serializers.ModelSerializer):
         ]
 
 class ResendVerificationSerializer(serializers.Serializer):
-
     email = serializers.EmailField()
 
