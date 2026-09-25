@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from projects.models import Project
+from projects.models import Project, ProjectRole, Role
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,4 +18,28 @@ class ProjectSerializer(serializers.ModelSerializer):
             'status',
             'created_at',
             'updated_at'
+        ]
+
+class ProjectRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectRole
+        read_only_fields = [
+            'id'
+        ]
+        fields = [
+            'id',
+            'no_of_developers',
+            'project',
+            'role'
+        ]
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        read_only_fields = [
+            'id'
+        ]
+        fields = [
+            'id',
+            'title'
         ]
