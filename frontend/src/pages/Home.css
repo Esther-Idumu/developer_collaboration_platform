@@ -1,0 +1,87 @@
+.home-page {
+    display: flex;
+}
+
+/* Side Bar */
+
+aside {
+    background-color: var(--surface);
+    height: 100vh;
+    width: 225px;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+aside h1 {
+    font-size: 20px;
+}
+
+aside h1 span {
+    color: var(--indigo-accent);
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: 6px 8px;
+    gap: 10px;
+}
+
+.top-nav h2 {
+    padding-top: 15px;
+    font-size: 14px;
+    text-align: left;
+    margin: 0 0 10px 0;
+}
+
+.top-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 6px 8px;
+}
+
+.top-nav a:hover {
+    background-color: var(--indigo-accent);
+    border-radius: var(--radius-sm);
+    color: var(--surface);
+}
+
+.top-nav a svg {
+    flex-shrink: 0;
+    display: block;
+}
+
+.bottom-nav {
+    margin-top: auto;
+}
+
+.profile {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+}
+
+.profile p {
+    font-size: 14px;
+    color: var(--text);
+}
+
+.profile p span {
+    color: var(--text-secondary);
+}
+
+.profile-nav a {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.profile-nav svg {
+    flex-shrink: 0;
+}

@@ -1,6 +1,4 @@
-/* =========================
-HERO
-========================= */
+/* HERO */
 
 .hero {
     min-height: calc(100vh - 60px);
@@ -91,9 +89,7 @@ HERO
 }
 
 
-/* =========================
-   HERO VISUAL
-========================= */
+/* HERO VISUAL */
 
 .hero-visual {
     position: relative;
@@ -269,9 +265,7 @@ HERO
     border-radius: 8px;
 }
 
-/* =========================
-   HOW IT WORKS
-========================= */
+/* HOW IT WORKS */
 
 .how-it-works {
     padding: 110px 6%;

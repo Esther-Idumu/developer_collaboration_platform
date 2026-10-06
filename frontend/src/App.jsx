@@ -6,6 +6,7 @@ import Signup from './pages/Signup'
 import ProtectedRoute from './components/ProtectedRoute'
 import VerifyEmail from './pages/VerifyEmail'
 import CheckEmail from './pages/CheckEmail'
+import Home from './pages/Home'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/verify-email/:uid/:token" element={<VerifyEmail />} />
       <Route path="/check-email" element={<CheckEmail />} />
+      <Route path="/home" element={<Home />}/>
     </Routes>
   )
 }
