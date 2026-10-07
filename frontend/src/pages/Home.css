@@ -1,87 +1,203 @@
 .home-page {
     display: flex;
+    height: 100vh;
 }
 
 /* Side Bar */
 
-aside {
+.side-bar {
     background-color: var(--surface);
     height: 100vh;
     width: 225px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    box-sizing: border-box;
+    padding: 20px 14px;
+    border-right: 1px solid var(--border);
 }
 
-aside h1 {
-    font-size: 20px;
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
 }
 
-aside h1 span {
+.sidebar-header h1 {
+    font-size: var(--font-header);
+}
+
+.sidebar-header span {
     color: var(--indigo-accent);
 }
 
-nav {
+.close-sidebar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.close-sidebar:hover {
+    color: var(--text);
+}
+
+.top-nav,
+.profile-nav {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    padding: 6px 8px;
-    gap: 10px;
+    gap: 4px;
+}
+
+.top-nav {
+    padding-top: 24px;
 }
 
 .top-nav h2 {
-    padding-top: 15px;
-    font-size: 14px;
-    text-align: left;
-    margin: 0 0 10px 0;
+    font-size: 11px;
+    font-weight: var(--font-medium);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding: 0 10px;
+    margin-bottom: 6px;
 }
 
-.top-nav a {
-    display: inline-flex;
+.top-nav a,
+.profile-nav a {
+    display: flex;
     align-items: center;
     gap: 10px;
-    width: 100%;
     font-size: 14px;
     color: var(--text-secondary);
-    padding: 6px 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
 }
 
-.top-nav a:hover {
+.top-nav a:hover,
+.profile-nav a:hover {
+    background-color: var(--indigo-light);
+    color: var(--indigo-accent);
+}
+
+.top-nav a.active {
     background-color: var(--indigo-accent);
-    border-radius: var(--radius-sm);
     color: var(--surface);
 }
 
-.top-nav a svg {
+.top-nav a svg,
+.profile-nav a svg {
     flex-shrink: 0;
     display: block;
 }
 
+.badge {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: var(--indigo-light);
+    color: var(--indigo-accent);
+    font-size: 11px;
+    font-weight: var(--font-semibold);
+}
+
 .bottom-nav {
     margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
 }
 
 .profile {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px 8px;
 }
 
-.profile p {
-    font-size: 14px;
+.profile-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: var(--primary-blue-light);
+    color: var(--primary-blue);
+}
+
+.profile-name {
+    font-size: 13px;
+    font-weight: var(--font-semibold);
     color: var(--text);
 }
 
-.profile p span {
+.profile-role {
+    font-size: 12px;
     color: var(--text-secondary);
 }
 
-.profile-nav a {
-    font-size: 14px;
-    color: var(--text-secondary);
+.profile-nav {
+    padding-top: 6px;
 }
 
-.profile-nav svg {
-    flex-shrink: 0;
+/* Main area */
+
+.main-area {
+    flex: 1;
+    min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg);
+}
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.search {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+}
+
+.search svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none; 
+}
+
+.search input {
+    width: 100%;
+    padding: 8px 12px 8px 36px; 
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+}
+
+.search input:focus {
+    border-color: var(--indigo-accent);
+}
+
+.home-content {
+    padding: 24px;
 }

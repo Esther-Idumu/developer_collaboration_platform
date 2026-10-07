@@ -3,7 +3,7 @@
     display: none;
 }
 
-nav {
+.navbar {
     height: 68px;
     padding: 0 48px;
 
@@ -88,7 +88,7 @@ nav {
 
 @media (max-width: 768px) {
 
-    nav {
+    .navbar {
         height: 64px;
         padding: 0 24px;
     }

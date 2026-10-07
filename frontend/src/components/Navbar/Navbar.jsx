@@ -5,7 +5,7 @@ function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
-        <nav>
+        <nav className="navbar">
             <div className="nav-brand">
                 <a href="/">
                     <span>Dev</span>Link
