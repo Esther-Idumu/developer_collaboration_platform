@@ -1,4 +1,4 @@
-from .models import User
+from .models import User, Profile
 from rest_framework.views import APIView
 from .serializers import RegisterSerializer, LoginSerializer, ProfileSerializer, ResendVerificationSerializer
 from .services.email_verification import send_verification_email
@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+from django.shortcuts import get_object_or_404
 
 class RegisterView(APIView):
     def post(self, request):
@@ -139,3 +140,22 @@ class ResendVerificationView(APIView):
             status=status.HTTP_200_OK
         )
 
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+        profile = get_object_or_404(Profile, user_id=id)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        profile = get_object_or_404(Profile, user=request.user)
+        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
