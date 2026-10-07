@@ -1,14 +1,17 @@
+import { useState, useEffect } from "react";
 import "./Home.css";
 
 function Home() {
+    const [sideBarClosed, setSideBarClosed] = useState(false);
+
     return (
         <div className="home-page">
-            <aside className="side-bar">
+            <aside className={`side-bar ${sideBarClosed ? "collapsed" : ""}`}>
 
                 <div className="sidebar-header">
                     <h1>Dev<span>Link</span></h1>
 
-                    <button className="close-sidebar" type="button" aria-label="Close sidebar">
+                    <button className="close-sidebar" type="button" aria-label={sideBarClosed ? "Open sidebar" : "Close sidebar"} aria-expanded={!sideBarClosed} onClick={() => setSideBarClosed(prev => !prev)}>
                         <svg xmlns="http://www.w3.org/2000/svg" 
                         width="16" 
                         height="16" 
@@ -43,7 +46,7 @@ function Home() {
                             <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
                             <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                         </svg>
-                        Home
+                        <span className="link-label">Home</span>
                     </a>
 
                     <a href="#">
@@ -61,7 +64,7 @@ function Home() {
                             <circle cx="12" cy="12" r="10" />
                             <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" />
                         </svg>
-                        Discover
+                        <span className="link-label">Discover</span>
                     </a>
 
                     <a href="#">
@@ -78,7 +81,7 @@ function Home() {
                         >
                             <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
                         </svg>
-                        My Projects
+                        <span className="link-label">My Projects</span>
                     </a>
 
                     <a href="#">
@@ -99,7 +102,7 @@ function Home() {
                             <path d="M16 13H8" />
                             <path d="M16 17H8" />
                         </svg>
-                        Applications
+                        <span className="link-label">Applications</span>
                     </a>
 
                     <a href="#">
@@ -116,7 +119,8 @@ function Home() {
                         >
                             <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
                         </svg>
-                        Messages <span className="badge">2</span>
+                        <span className="link-label">Messages</span>
+                        <span className="badge">2</span>
                     </a>
                 </nav>
 
@@ -142,7 +146,7 @@ function Home() {
                             </svg>
                         </div>
 
-                        <div>
+                        <div className="profile-text">
                             <p className="profile-name">Esther Idumu</p>
                             <p className="profile-role">Developer</p>
                         </div>
@@ -167,7 +171,7 @@ function Home() {
                                 <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
                                 <circle cx="10" cy="7" r="4" />
                             </svg>
-                            Profile
+                            <span className="link-label">Profile</span>
                         </a>
 
                         <a href="#">
@@ -185,7 +189,7 @@ function Home() {
                                 <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
                                 <circle cx="12" cy="12" r="3" />
                             </svg>
-                            Settings
+                            <span className="link-label">Settings</span>
                         </a>
 
                     </nav>
