@@ -26,17 +26,109 @@ class ProjectView(APIView):
         )
 
     def get(self, request):
-        projects = Project.objects.filter(status=Project.ProjectStatus.OPEN)
+        projects = Project.objects.filter(status=Project.ProjectStatus.OPEN, is_archived=False)
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
 class ProjectDetailView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request, id):
         project = get_object_or_404(Project, id=id)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
 
+    def patch(self, request, id):
+        project = get_object_or_404(Project, id=id)
+
+        if project.project_owner != request.user:
+            return Response({
+                "error": "You do not have permission to update this project."
+            },
+            status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = ProjectSerializer(project, data=request.data, partial=True)
+        if serializer.is_valid():
+            project = serializer.save()
+            return Response({
+                "message": "Project updated successfully.",
+                "project": ProjectSerializer(project).data
+            },
+            status=status.HTTP_200_OK
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, id):
+        project = get_object_or_404(Project, id=id)
+
+        if project.project_owner!=request.user:
+            return Response({
+                "message": "You are not allowed to delete this project."
+            },
+            status=status.HTTP_403_FORBIDDEN)
+
+        project.delete()
+        return Response({
+            "message": "Project deleted successfully."
+        },
+        status=status.HTTP_204_NO_CONTENT)
+
+class ProjectStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, id):
+        project = get_object_or_404(Project, id=id)
+
+        if project.project_owner != request.user:
+            return Response(
+                {"error": "You do not have permission to change this project's status."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        new_status = request.data.get("status")
+        if not new_status:
+            return Response(
+                {"error": "Status is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        allowed_transitions = {
+            "open": ["in_progress"],
+            "in_progress": ["complete"],
+            "complete": []
+        }
+        if new_status not in allowed_transitions:
+            return Response(
+                {"error": "Invalid project status."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if new_status not in allowed_transitions[project.status]:
+            return Response({
+                "error": f"You cannot change status from {project.status} to {new_status}."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+            )
+        project.status = new_status
+        project.save(update_fields=["status"])
+
+        return Response(
+            {
+                "message": "Project status updated successfully.",
+                "status": project.status
+            },
+            status=status.HTTP_200_OK
+        )
+
+class ArchivedProjectsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        projects = Project.objects.filter(project_owner=request.user, is_archived=True)
+        serializer = ProjectSerializer(projects, many=True)
+        return Response(serializer.data)
+    
 class UserProjectsView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, id):
