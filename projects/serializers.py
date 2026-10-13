@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from projects.models import Project, ProjectRole, Role
+from projects.models import Project, ProjectRole, Role, Skill, ManualSkill
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,8 +32,22 @@ class ProjectRoleSerializer(serializers.ModelSerializer):
             'id',
             'no_of_developers',
             'project',
-            'role'
+            'role',
+            'skills',
+            'manual_skills'
         ]
+
+    def validate_manual_skills(self, manual_skills):
+        request = self.context.get('request')
+
+        if request:
+            for manual_skill in manual_skills:
+                if manual_skill.submitted_by != request.user:
+                    raise serializers.ValidationError(
+                        "You can only use manual skills that you submitted."
+                    )
+
+        return manual_skills
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,4 +58,30 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'title'
+        ]
+
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        read_only_fields = [
+            'id'
+        ]
+        fields = [
+            'id',
+            'title'
+        ]
+
+class ManualSkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ManualSkill
+        read_only_fields = [
+            'id',
+            'submitted_by',
+            'created_at'
+        ]
+        fields = [
+            'id',
+            'title',
+            'submitted_by',
+            'created_at'
         ]

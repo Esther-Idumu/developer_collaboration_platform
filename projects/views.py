@@ -1,11 +1,10 @@
 from rest_framework.views import APIView
-from .serializers import ProjectSerializer, RoleSerializer, ProjectRoleSerializer
+from .serializers import ProjectSerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from .models import Project, Role, ProjectRole
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .models import Project, Role, ProjectRole, Skill, ManualSkill
 from django.shortcuts import get_object_or_404
-from .models import Project, ProjectRole
 
 class ProjectView(APIView):
     permission_classes = [IsAuthenticated]
@@ -137,7 +136,12 @@ class UserProjectsView(APIView):
         return Response(serializer.data)
 
 class RoleView(APIView):
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        if self.request.method == "POST":
+            self.permission_classes = [IsAdminUser]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return [permission() for permission in self.permission_classes]
 
     def post(self, request):
         serializer = RoleSerializer(data=request.data)
@@ -163,8 +167,6 @@ class ProjectRoleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = ProjectRoleSerializer(data=request.data)
-        if serializer.is_valid():
             project = get_object_or_404(
                 Project,
                 id=request.data["project"]
@@ -175,21 +177,53 @@ class ProjectRoleView(APIView):
                     {"detail": "You do not have permission to modify this project."},
                     status=status.HTTP_403_FORBIDDEN
                 )
+            serializer = ProjectRoleSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                projectrole = serializer.save()
+                return Response({
+                    "message": "Project's role created successfully.",
+                    "projectrole": ProjectRoleSerializer(projectrole).data
+                },
+                status=status.HTTP_201_CREATED
+                )
             
-            projectrole = serializer.save()
-            return Response({
-                "message": "Project's role created successfully.",
-                "projectrole": ProjectRoleSerializer(projectrole).data
-            },
-            status=status.HTTP_201_CREATED
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
             )
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
 
     def get(self, request):
         project_roles = ProjectRole.objects.all()
         serializer = ProjectRoleSerializer(project_roles, many=True)
         return Response(serializer.data)
 
+class SkillView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        skills = Skill.objects.all()
+        serializer = SkillSerializer(skills, many=True)
+        return Response(serializer.data)
+
+class ManualSkillView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = ManualSkillSerializer(data=request.data)
+        if serializer.is_valid():
+            manual_skill = serializer.save(submitted_by=request.user)
+            return Response ({
+                "message": "Manual skill created successfully.",
+                "manual_skill": ManualSkillSerializer(manual_skill).data
+            },
+            status=status.HTTP_201_CREATED
+            )
+        return Response (
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def get(self, request):
+        manual_skills = ManualSkill.objects.filter(
+            submitted_by=request.user
+        )
+        serializer = ManualSkillSerializer(manual_skills, many=True)
+        return Response(serializer.data)

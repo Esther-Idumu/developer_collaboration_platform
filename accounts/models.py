@@ -34,6 +34,9 @@ class Profile(models.Model):
     school = models.CharField(max_length=100, blank=True)
     graduation_year = models.IntegerField(blank=True, null=True)
     course_of_study = models.CharField(max_length=100, blank=True)
+    skills = models.ManyToManyField('projects.Skill', blank=True)
+    manual_skills = models.ManyToManyField('projects.ManualSkill', blank=True)
     github = models.URLField(max_length=200, blank=True)
     portfolio = models.URLField(max_length=200, blank=True)
+
 

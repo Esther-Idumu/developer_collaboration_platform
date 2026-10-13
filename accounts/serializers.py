@@ -57,9 +57,23 @@ class ProfileSerializer(serializers.ModelSerializer):
             'school',
             'graduation_year',
             'course_of_study',
+            'skills',
+            'manual_skills',
             'github',
             'portfolio'
         ]
+
+    def validate_manual_skills(self, manual_skills):
+        request = self.context.get('request')
+
+        if request:
+            for manual_skill in manual_skills:
+                if manual_skill.submitted_by != request.user:
+                    raise serializers.ValidationError(
+                        "You can only use manual skills that you submitted."
+                    )
+
+        return manual_skills
 
 class ResendVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField()
