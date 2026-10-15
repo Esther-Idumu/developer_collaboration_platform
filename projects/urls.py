@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ProjectView, ProjectDetailView, UserProjectsView, RoleView, ProjectRoleView, ProjectStatusView, ArchivedProjectsView, SkillView, ManualSkillView
+from .views import ProjectView, ProjectDetailView, UserProjectsView, RoleView, ProjectRoleView, ProjectStatusView, ArchivedProjectsView, SkillView, ManualSkillView, ApplicationView, ApplicationDetailView, ProjectApplicationsView, ProjectRoleApplicationsView, WithdrawApplicationView, ApplicationDecisionView
 
 urlpatterns = [
     path('', ProjectView.as_view(), name='projects'),
@@ -9,6 +9,12 @@ urlpatterns = [
     path('archived', ArchivedProjectsView.as_view(), name='archived-projects'),
     path('skills', SkillView.as_view(), name='skills'),
     path('manual-skills', ManualSkillView.as_view(), name='manual-skills'),
-    path('<int:id>', ProjectDetailView.as_view(), name='project-detail'),
+    path('applications', ApplicationView.as_view(), name='applications'),
+    path('applications/<int:id>', ApplicationDetailView.as_view(), name='application-details'),
+    path('applications/<int:id>/withdraw', WithdrawApplicationView.as_view(), name='withdraw-applications'),
+    path('applications/<int:id>/decision', ApplicationDecisionView.as_view(), name='application-decision'),
+    path('project-roles/<int:id>/applications', ProjectRoleApplicationsView.as_view(), name='project-role-applications'),
+    path('<int:id>', ProjectDetailView.as_view(), name='project-details'),
     path('<int:id>/status', ProjectStatusView.as_view(), name='project-status'),
+    path('<int:id>/applications', ProjectApplicationsView.as_view(), name='project-applications'),
 ]

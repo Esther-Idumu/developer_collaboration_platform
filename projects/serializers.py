@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from projects.models import Project, ProjectRole, Role, Skill, ManualSkill
+from projects.models import Project, ProjectRole, Role, Skill, ManualSkill, Application
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,4 +84,24 @@ class ManualSkillSerializer(serializers.ModelSerializer):
             'title',
             'submitted_by',
             'created_at'
+        ]
+
+class ApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Application
+        read_only_fields = [
+            'id',
+            'user',
+            'status',
+            'created_at',
+            'updated_at'
+        ]
+        fields = [
+            'id',
+            'user',
+            'project_role',
+            'message',
+            'status',
+            'created_at',
+            'updated_at'
         ]

@@ -39,3 +39,24 @@ class ProjectRole(models.Model):
                 name='unique_project_role'
             )
         ]
+
+class Application(models.Model):
+    class ApplicationStatus(models.TextChoices):
+        PENDING = 'pending'
+        ACCEPTED = 'accepted'
+        REJECTED = 'rejected'
+        WITHDRAWN = 'withdrawn'
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'project_role'],
+                name='unique_application'
+            )
+        ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
+    project_role = models.ForeignKey(ProjectRole, on_delete=models.CASCADE, related_name='applications')
+    message = models.CharField(max_length=1000)
+    status = models.CharField(max_length=20, choices=ApplicationStatus.choices, default=ApplicationStatus.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

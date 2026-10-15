@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
-from .serializers import ProjectSerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer
+from .serializers import ProjectSerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .models import Project, Role, ProjectRole, Skill, ManualSkill
+from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application
 from django.shortcuts import get_object_or_404
 
 class ProjectView(APIView):
@@ -222,8 +222,90 @@ class ManualSkillView(APIView):
         )
 
     def get(self, request):
-        manual_skills = ManualSkill.objects.filter(
-            submitted_by=request.user
-        )
+        manual_skills = ManualSkill.objects.filter(submitted_by=request.user)
         serializer = ManualSkillSerializer(manual_skills, many=True)
         return Response(serializer.data)
+
+class ApplicationView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = ApplicationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response({
+                "message": "Application created successfully.",
+                "application": serializer.data
+            },
+            status=status.HTTP_201_CREATED)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def get(self, request):
+        applications = Application.objects.filter(user=request.user)
+        serializer = ApplicationSerializer(applications, many=True)
+        return Response(serializer.data)
+
+class ApplicationDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, id):
+        application = get_object_or_404(Application, id=id, user=request.user)
+        serializer = ApplicationSerializer(application)
+        return Response(serializer.data)
+
+class ProjectApplicationsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, id):
+        project = get_object_or_404(Project, id=id, project_owner=request.user)
+        applications = Application.objects.filter(
+            project_role__project=project)
+        serializer = ApplicationSerializer(applications, many=True)
+        return Response(serializer.data)
+
+class ProjectRoleApplicationsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, id):
+        project_role = get_object_or_404(ProjectRole, id=id, project__project_owner=request.user)
+        applications = Application.objects.filter(project_role=project_role)
+        serializer = ApplicationSerializer(applications, many=True)
+        return Response(serializer.data)
+
+class WithdrawApplicationView(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request, id):
+        application = get_object_or_404(Application, id=id, user=request.user)
+        if application.status=='pending':
+            application.status='withdrawn'
+            application.save()
+            serializer = ApplicationSerializer(application)
+            return Response({
+                "message": "Application withdrawn successfully.",
+                "application": serializer.data
+            },
+            status=status.HTTP_200_OK)
+        return Response({
+            "message": "Only pending applications can be withdrawn."
+        },status=status.HTTP_400_BAD_REQUEST)
+
+class ApplicationDecisionView(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request, id):
+        application = get_object_or_404(Application, id=id, project_role__project__project_owner=request.user)
+        if application.status=='pending':
+            decision = request.data.get('decision')
+            if decision not in ['accepted', 'rejected']:
+                return Response({
+                    "message": "This is not a valid option."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            application.status = decision
+            application.save()
+            serializer = ApplicationSerializer(application)
+            return Response({
+                "message": f"Application has been {decision} successfully.",
+                "application": serializer.data
+            },status=status.HTTP_200_OK)
+
+        return Response({
+            "message": "Only pending applications can be accepted or rejected."
+        }, status=status.HTTP_400_BAD_REQUEST)
