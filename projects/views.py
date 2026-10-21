@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
-from .serializers import ProjectSerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer
+from .serializers import ProjectSerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application
+from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application, ProjectMember
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 
 class ProjectView(APIView):
     permission_classes = [IsAuthenticated]
@@ -290,22 +291,49 @@ class WithdrawApplicationView(APIView):
 
 class ApplicationDecisionView(APIView):
     permission_classes = [IsAuthenticated]
-    def patch(self, request, id):
-        application = get_object_or_404(Application, id=id, project_role__project__project_owner=request.user)
-        if application.status=='pending':
-            decision = request.data.get('decision')
-            if decision not in ['accepted', 'rejected']:
-                return Response({
-                    "message": "This is not a valid option."
-                }, status=status.HTTP_400_BAD_REQUEST)
-            application.status = decision
-            application.save()
-            serializer = ApplicationSerializer(application)
-            return Response({
-                "message": f"Application has been {decision} successfully.",
-                "application": serializer.data
-            },status=status.HTTP_200_OK)
 
+    def patch(self, request, id):
+        decision = request.data.get('decision')
+        if decision not in ['accepted', 'rejected']:
+            return Response({
+                "message": "This is not a valid option."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            application = get_object_or_404(Application.objects.select_for_update(),
+                                            id=id, 
+                                            project_role__project__project_owner=request.user)
+        
+        if application.status !='pending':
+            return Response({
+                "message": "Only pending applications can be accepted or rejected."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if decision == 'accepted':
+            project_member, _ = ProjectMember.objects.get_or_create(
+                user=application.user,
+                project=application.project_role.project
+            )
+            project_member.project_roles.add(application.project_role)
+        application.status = decision
+        application.save()
+        serializer = ApplicationSerializer(application)
         return Response({
-            "message": "Only pending applications can be accepted or rejected."
-        }, status=status.HTTP_400_BAD_REQUEST)
+            "message": f"Application has been {decision} successfully.",
+            "application": serializer.data
+        },status=status.HTTP_200_OK)
+
+
+class ProjectMembersView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, id):
+        project = get_object_or_404(Project, id=id)
+        project_members = project.project_members.all()
+        serializer = ProjectMemberSerializer(project_members, many=True)
+        return Response(serializer.data)
+
+class ProjectMemberView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, id):
+        project_member = get_object_or_404(ProjectMember, id=id)
+        serializer = ProjectMemberSerializer(project_member)
+        return Response (serializer.data)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from projects.models import Project, ProjectRole, Role, Skill, ManualSkill, Application
+from projects.models import Project, ProjectRole, Role, Skill, ManualSkill, Application, ProjectMember
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,3 +105,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         ]
+
+class ProjectMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectMember
+        fields = [
+            'id',
+            'project',
+            'user',
+            'project_roles',
+            'joined_at'
+        ]
+        read_only_fields = fields

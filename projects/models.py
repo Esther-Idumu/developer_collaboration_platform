@@ -60,3 +60,17 @@ class Application(models.Model):
     status = models.CharField(max_length=20, choices=ApplicationStatus.choices, default=ApplicationStatus.PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class ProjectMember(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_members')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project_members')
+    project_roles = models.ManyToManyField(ProjectRole, related_name='project_members')
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'project'],
+                name='unique_project_membership'
+            )
+        ]

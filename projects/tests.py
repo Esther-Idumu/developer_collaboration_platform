@@ -3,9 +3,10 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import Application, Project, ProjectRole, Role
+from .models import Application, Project, ProjectRole, Role, ProjectMember
 
 User = get_user_model()
+
 
 class ApplicationAPITests(APITestCase):
 
@@ -99,7 +100,6 @@ class ApplicationAPITests(APITestCase):
             0
         )
 
-
     def test_user_can_view_their_applications(self):
         Application.objects.create(
             user=self.applicant,
@@ -122,7 +122,6 @@ class ApplicationAPITests(APITestCase):
             len(response.data),
             1
         )
-
 
     def test_user_cannot_view_another_users_application_in_list(self):
         another_user = User.objects.create_user(
@@ -152,7 +151,6 @@ class ApplicationAPITests(APITestCase):
             0
         )
 
-
     def test_user_can_view_single_application(self):
         application = Application.objects.create(
             user=self.applicant,
@@ -178,7 +176,6 @@ class ApplicationAPITests(APITestCase):
             response.data["id"],
             application.id
         )
-
 
     def test_user_cannot_view_another_users_single_application(self):
         another_user = User.objects.create_user(
@@ -206,7 +203,6 @@ class ApplicationAPITests(APITestCase):
             status.HTTP_404_NOT_FOUND
         )
 
-
     def test_project_owner_can_view_project_applications(self):
         Application.objects.create(
             user=self.applicant,
@@ -233,7 +229,6 @@ class ApplicationAPITests(APITestCase):
             1
         )
 
-
     def test_non_owner_cannot_view_project_applications(self):
         Application.objects.create(
             user=self.applicant,
@@ -254,7 +249,6 @@ class ApplicationAPITests(APITestCase):
             response.status_code,
             status.HTTP_404_NOT_FOUND
         )
-
 
     def test_project_owner_can_view_project_role_applications(self):
         Application.objects.create(
@@ -282,7 +276,6 @@ class ApplicationAPITests(APITestCase):
             1
         )
 
-
     def test_non_owner_cannot_view_project_role_applications(self):
         self.client.force_authenticate(user=self.applicant)
 
@@ -297,7 +290,6 @@ class ApplicationAPITests(APITestCase):
             response.status_code,
             status.HTTP_404_NOT_FOUND
         )
-
 
     def test_applicant_can_withdraw_pending_application(self):
         application = Application.objects.create(
@@ -329,7 +321,6 @@ class ApplicationAPITests(APITestCase):
             "withdrawn"
         )
 
-
     def test_user_cannot_withdraw_another_users_application(self):
         another_user = User.objects.create_user(
             email="another@test.com",
@@ -357,7 +348,6 @@ class ApplicationAPITests(APITestCase):
             response.status_code,
             status.HTTP_404_NOT_FOUND
         )
-
 
     def test_accepted_application_cannot_be_withdrawn(self):
         application = Application.objects.create(
@@ -389,7 +379,6 @@ class ApplicationAPITests(APITestCase):
             application.status,
             "accepted"
         )
-
 
     def test_project_owner_can_accept_application(self):
         application = Application.objects.create(
@@ -423,7 +412,6 @@ class ApplicationAPITests(APITestCase):
             "accepted"
         )
 
-
     def test_project_owner_can_reject_application(self):
         application = Application.objects.create(
             user=self.applicant,
@@ -456,7 +444,6 @@ class ApplicationAPITests(APITestCase):
             "rejected"
         )
 
-
     def test_non_owner_cannot_make_application_decision(self):
         application = Application.objects.create(
             user=self.applicant,
@@ -486,7 +473,6 @@ class ApplicationAPITests(APITestCase):
             response.status_code,
             status.HTTP_404_NOT_FOUND
         )
-
 
     def test_invalid_application_decision_is_rejected(self):
         application = Application.objects.create(
@@ -520,7 +506,6 @@ class ApplicationAPITests(APITestCase):
             "pending"
         )
 
-
     def test_non_pending_application_cannot_be_decided_again(self):
         application = Application.objects.create(
             user=self.applicant,
@@ -552,4 +537,277 @@ class ApplicationAPITests(APITestCase):
         self.assertEqual(
             application.status,
             "accepted"
+        )
+
+    def test_accepting_application_creates_project_membership(self):
+        application = Application.objects.create(
+            user=self.applicant,
+            project_role=self.project_role,
+            message="I would like to join."
+        )
+
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.patch(
+            reverse(
+                "application-decision",
+                kwargs={"id": application.id}
+            ),
+            {
+                "decision": "accepted"
+            },
+            format="json"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        self.assertEqual(
+            ProjectMember.objects.count(),
+            1
+        )
+
+        project_member = ProjectMember.objects.first()
+
+        self.assertEqual(
+            project_member.user,
+            self.applicant
+        )
+
+        self.assertEqual(
+            project_member.project,
+            self.project
+        )
+
+    def test_accepting_application_assigns_project_role_to_member(self):
+        application = Application.objects.create(
+            user=self.applicant,
+            project_role=self.project_role,
+            message="I would like to join."
+        )
+
+        self.client.force_authenticate(user=self.owner)
+
+        self.client.patch(
+            reverse(
+                "application-decision",
+                kwargs={"id": application.id}
+            ),
+            {
+                "decision": "accepted"
+            },
+            format="json"
+        )
+
+        project_member = ProjectMember.objects.get(
+            user=self.applicant,
+            project=self.project
+        )
+
+        self.assertIn(
+            self.project_role,
+            project_member.project_roles.all()
+        )
+
+    def test_rejected_application_does_not_create_project_membership(self):
+        application = Application.objects.create(
+            user=self.applicant,
+            project_role=self.project_role,
+            message="I would like to join."
+        )
+
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.patch(
+            reverse(
+                "application-decision",
+                kwargs={"id": application.id}
+            ),
+            {
+                "decision": "rejected"
+            },
+            format="json"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        self.assertEqual(
+            ProjectMember.objects.count(),
+            0
+        )
+
+    def test_accepting_another_role_for_same_project_reuses_membership(self):
+        second_role = Role.objects.create(
+            title="Frontend Developer"
+        )
+
+        second_project_role = ProjectRole.objects.create(
+            project=self.project,
+            role=second_role,
+            no_of_developers=1
+        )
+
+        first_application = Application.objects.create(
+            user=self.applicant,
+            project_role=self.project_role,
+            message="I would like to join."
+        )
+
+        self.client.force_authenticate(user=self.owner)
+
+        self.client.patch(
+            reverse(
+                "application-decision",
+                kwargs={"id": first_application.id}
+            ),
+            {
+                "decision": "accepted"
+            },
+            format="json"
+        )
+
+        second_application = Application.objects.create(
+            user=self.applicant,
+            project_role=second_project_role,
+            message="I would also like to work on the frontend."
+        )
+
+        self.client.patch(
+            reverse(
+                "application-decision",
+                kwargs={"id": second_application.id}
+            ),
+            {
+                "decision": "accepted"
+            },
+            format="json"
+        )
+
+        self.assertEqual(
+            ProjectMember.objects.filter(
+                user=self.applicant,
+                project=self.project
+            ).count(),
+            1
+        )
+
+        project_member = ProjectMember.objects.get(
+            user=self.applicant,
+            project=self.project
+        )
+
+        self.assertEqual(
+            project_member.project_roles.count(),
+            2
+        )
+
+        self.assertIn(
+            self.project_role,
+            project_member.project_roles.all()
+        )
+
+        self.assertIn(
+            second_project_role,
+            project_member.project_roles.all()
+        )
+
+    def test_authenticated_user_can_view_project_members(self):
+        ProjectMember.objects.create(
+            user=self.applicant,
+            project=self.project
+        )
+
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.get(
+            reverse(
+                "project-members",
+                kwargs={"id": self.project.id}
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        self.assertEqual(
+            len(response.data),
+            1
+        )
+
+        self.assertEqual(
+            response.data[0]["user"],
+            self.applicant.id
+        )
+
+        self.assertEqual(
+            response.data[0]["project"],
+            self.project.id
+        )
+
+    def test_authenticated_user_can_view_single_project_member(self):
+        project_member = ProjectMember.objects.create(
+            user=self.applicant,
+            project=self.project
+        )
+
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.get(
+            reverse(
+                "project-member",
+                kwargs={"id": project_member.id}
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        self.assertEqual(
+            response.data["id"],
+            project_member.id
+        )
+
+        self.assertEqual(
+            response.data["user"],
+            self.applicant.id
+        )
+
+    def test_unauthenticated_user_cannot_view_project_members(self):
+        response = self.client.get(
+            reverse(
+                "project-members",
+                kwargs={"id": self.project.id}
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED
+        )
+
+    def test_unauthenticated_user_cannot_view_single_project_member(self):
+        project_member = ProjectMember.objects.create(
+            user=self.applicant,
+            project=self.project
+        )
+
+        response = self.client.get(
+            reverse(
+                "project-member",
+                kwargs={"id": project_member.id}
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED
         )
