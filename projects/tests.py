@@ -811,3 +811,142 @@ class ApplicationAPITests(APITestCase):
             response.status_code,
             status.HTTP_401_UNAUTHORIZED
         )
+
+    def test_user_cannot_apply_to_in_progress_project(self):
+        self.project.status = "in_progress"
+        self.project.save()
+
+        self.client.force_authenticate(user=self.applicant)
+
+        response = self.client.post(
+            reverse("applications"),
+            {
+                "project_role": self.project_role.id,
+                "message": "I would like to work on this project."
+            },
+            format="json"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+        self.assertEqual(
+            Application.objects.count(),
+            0
+        )
+
+
+    def test_user_cannot_apply_to_completed_project(self):
+        self.project.status = "complete"
+        self.project.save()
+
+        self.client.force_authenticate(user=self.applicant)
+
+        response = self.client.post(
+            reverse("applications"),
+            {
+                "project_role": self.project_role.id,
+                "message": "I would like to work on this project."
+            },
+            format="json"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+        self.assertEqual(
+            Application.objects.count(),
+            0
+        )
+
+
+    def test_project_owner_cannot_apply_to_own_project(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.post(
+            reverse("applications"),
+            {
+                "project_role": self.project_role.id,
+                "message": "I would like to join my own project."
+            },
+            format="json"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+        self.assertEqual(
+            Application.objects.count(),
+            0
+        )
+
+
+    def test_role_cannot_exceed_capacity(self):
+        second_applicant = User.objects.create_user(
+            email="second@test.com",
+            password="password123"
+        )
+
+        first_application = Application.objects.create(
+            user=self.applicant,
+            project_role=self.project_role,
+            message="I would like to join."
+        )
+
+        second_application = Application.objects.create(
+            user=second_applicant,
+            project_role=self.project_role,
+            message="I would also like to join."
+        )
+
+        self.client.force_authenticate(user=self.owner)
+
+        first_response = self.client.patch(
+            reverse(
+                "application-decision",
+                kwargs={"id": first_application.id}
+            ),
+            {
+                "decision": "accepted"
+            },
+            format="json"
+        )
+
+        self.assertEqual(
+            first_response.status_code,
+            status.HTTP_200_OK
+        )
+
+        second_response = self.client.patch(
+            reverse(
+                "application-decision",
+                kwargs={"id": second_application.id}
+            ),
+            {
+                "decision": "accepted"
+            },
+            format="json"
+        )
+
+        self.assertEqual(
+            second_response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+        second_application.refresh_from_db()
+
+        self.assertEqual(
+            second_application.status,
+            "pending"
+        )
+
+        self.assertEqual(
+            self.project_role.project_members.count(),
+            1
+        )

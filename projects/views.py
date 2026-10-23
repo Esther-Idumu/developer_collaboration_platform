@@ -132,7 +132,7 @@ class ArchivedProjectsView(APIView):
 class UserProjectsView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, id):
-        project = Project.objects.filter(project_owner_id=id)
+        project = Project.objects.filter(project_owner_id=id, is_archived=False)
         serializer = ProjectSerializer(project, many=True)
         return Response(serializer.data)
 
@@ -168,14 +168,11 @@ class ProjectRoleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-            project = get_object_or_404(
-                Project,
-                id=request.data["project"]
-            )
+            project = get_object_or_404(Project, id=request.data.get('project'))
 
             if project.project_owner != request.user:
                 return Response(
-                    {"detail": "You do not have permission to modify this project."},
+                    {"message": "You do not have permission to modify this project."},
                     status=status.HTTP_403_FORBIDDEN
                 )
             serializer = ProjectRoleSerializer(data=request.data, context={'request': request})
@@ -232,16 +229,26 @@ class ApplicationView(APIView):
     def post(self, request):
         serializer = ApplicationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            project_role = serializer.validated_data['project_role']
+            project = project_role.project
+            if project.status == 'open':
+                if project.project_owner == request.user:
+                    return Response({
+                        "message": "You cannot apply to a project you own."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                serializer.save(user=request.user)
+                return Response({
+                    "message": "Application created successfully.",
+                    "application": serializer.data
+                },
+                status=status.HTTP_201_CREATED)
             return Response({
-                "message": "Application created successfully.",
-                "application": serializer.data
-            },
-            status=status.HTTP_201_CREATED)
+                "message": "Applications are closed for this project.",
+            }, status=status.HTTP_400_BAD_REQUEST)
         return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+                        serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
     def get(self, request):
         applications = Application.objects.filter(user=request.user)
@@ -304,24 +311,31 @@ class ApplicationDecisionView(APIView):
                                             id=id, 
                                             project_role__project__project_owner=request.user)
         
-        if application.status !='pending':
-            return Response({
-                "message": "Only pending applications can be accepted or rejected."
-            }, status=status.HTTP_400_BAD_REQUEST)
-        if decision == 'accepted':
-            project_member, _ = ProjectMember.objects.get_or_create(
-                user=application.user,
-                project=application.project_role.project
-            )
-            project_member.project_roles.add(application.project_role)
-        application.status = decision
-        application.save()
+            if application.status !='pending':
+                return Response({
+                    "message": "Only pending applications can be accepted or rejected."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            if decision == 'accepted':
+                project_role = ProjectRole.objects.select_for_update().get(id=application.project_role.id)
+                current_members = project_role.project_members.count()
+                if current_members >= project_role.no_of_developers:
+                    return Response({
+                        "message": "This role has reached its maximum capacity."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                project_member, _ = ProjectMember.objects.get_or_create(
+                    user=application.user,
+                    project=project_role.project
+                )
+                project_member.project_roles.add(project_role)
+                    
+            application.status = decision
+            application.save()
         serializer = ApplicationSerializer(application)
         return Response({
             "message": f"Application has been {decision} successfully.",
             "application": serializer.data
         },status=status.HTTP_200_OK)
-
 
 class ProjectMembersView(APIView):
     permission_classes = [IsAuthenticated]
