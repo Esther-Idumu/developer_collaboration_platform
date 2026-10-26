@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
 
         try {
             const response = await fetch(
-                "http://127.0.0.1:8000/api/accounts/me/",
+                "http://127.0.0.1:8000/api/accounts/me",
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,

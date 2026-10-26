@@ -23,7 +23,7 @@ function Login() {
 
         try {
             const response = await fetch(
-                "http://127.0.0.1:8000/api/accounts/login/",
+                "http://127.0.0.1:8000/api/accounts/login",
                 {
                     method: "POST",
                     headers: {
@@ -59,7 +59,7 @@ function Login() {
             const refreshToken = data.refresh;
 
             const userResponse = await fetch(
-                "http://127.0.0.1:8000/api/accounts/me/",
+                "http://127.0.0.1:8000/api/accounts/me",
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,

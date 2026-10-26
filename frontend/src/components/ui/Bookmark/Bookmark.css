@@ -1,0 +1,24 @@
+.bookmark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 6px;
+    border: none;
+    border-radius: var(--radius-xsm);
+    background: none;
+    color: var(--text-secondary-light);
+    cursor: pointer;
+}
+
+.bookmark:hover {
+    color: var(--indigo-accent);
+    background: var(--indigo-light);
+}
+
+.bookmark.saved {
+    color: var(--indigo-accent);
+}
+
+.bookmark.bookmark.saved svg {
+    fill: currentColor;
+}

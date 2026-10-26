@@ -1,7 +1,7 @@
 import './App.css'
 import { Routes, Route } from 'react-router-dom'
 import Landing from './pages/Landing'
-import Login from './pages/login'
+import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ProtectedRoute from './components/ProtectedRoute'
 import VerifyEmail from './pages/VerifyEmail'

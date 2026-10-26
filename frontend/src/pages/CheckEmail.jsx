@@ -26,7 +26,7 @@ function CheckEmail() {
         try {
 
             const response = await fetch(
-                "http://127.0.0.1:8000/api/accounts/resend-verification/",
+                "http://127.0.0.1:8000/api/accounts/resend-verification",
                 {
                     method: "POST",
                     headers: {

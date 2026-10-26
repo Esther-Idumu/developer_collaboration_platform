@@ -16,7 +16,7 @@ function VerifyEmail() {
 
             try {
                 const response = await fetch(
-                    `http://127.0.0.1:8000/api/accounts/verify-email/${uid}/${token}/`
+                    `http://127.0.0.1:8000/api/accounts/verify-email/${uid}/${token}`
                 );
 
                 const data = await response.json();

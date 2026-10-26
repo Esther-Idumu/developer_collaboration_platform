@@ -1,0 +1,23 @@
+.status-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: var(--font-medium);
+    white-space: nowrap;
+}
+
+.status-open {
+    background: var(--status-green-light);
+    color: var(--status-green);
+}
+
+.status-in_progress {
+    background: var(--primary-blue-lighter);
+    color: var(--primary-blue-dark);
+}
+
+.status-complete {
+    background: #f1f2f4;
+    color: #5b6270;
+}
