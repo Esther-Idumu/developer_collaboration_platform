@@ -1,0 +1,21 @@
+.ownership-badge {
+    display: inline-block;
+    padding: 6px 11px;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    border-radius: var(--radius-xsm);
+    font-size: 12px;
+    font-weight: var(--font-mediumpro);
+    white-space: nowrap;
+}
+
+.ownership-badge-owner {
+    color: var(--indigo-accent);
+    background: var(--indigo-light);
+}
+
+.ownership-badge-member {
+    background: #f1f2f4;
+    color: #5b6270;
+}

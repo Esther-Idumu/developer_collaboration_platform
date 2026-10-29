@@ -1,0 +1,21 @@
+.application-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--indigo-light);
+    color: var(--indigo-accent);
+    font-size: 12px;
+    font-weight: var(--font-mediumpro);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.application-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}

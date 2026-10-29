@@ -1,8 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Sidebar.css";
 
+const SMALL_SCREEN = "(max-width: 768px)";
+
 function Sidebar() {
-    const [sideBarClosed, setSideBarClosed] = useState(false);
+    const [sideBarClosed, setSideBarClosed] = useState(() => window.matchMedia(SMALL_SCREEN).matches );
+
+    useEffect(() => {
+        const query = window.matchMedia(SMALL_SCREEN);
+
+        function handleChange(event) {
+            if (event.matches) {
+                setSideBarClosed(true);
+            }
+        }
+
+        query.addEventListener("change", handleChange);
+
+        return () => query.removeEventListener("change", handleChange);
+    }, []);
 
     return (
         <aside className={`side-bar ${sideBarClosed ? "collapsed" : ""}`}>
