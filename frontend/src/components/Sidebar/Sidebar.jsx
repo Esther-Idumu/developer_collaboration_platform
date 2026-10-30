@@ -76,24 +76,6 @@ function Sidebar() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                         >
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" />
-                        </svg>
-                        <span className="link-label">Discover</span>
-                    </a>
-
-                    <a href="#">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
                             <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
                         </svg>
                         <span className="link-label">My Projects</span>
@@ -120,23 +102,6 @@ function Sidebar() {
                         <span className="link-label">Applications</span>
                     </a>
 
-                    <a href="#">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
-                        </svg>
-                        <span className="link-label">Messages</span>
-                        <span className="badge">2</span>
-                    </a>
                 </nav>
 
                 <div className="bottom-nav">

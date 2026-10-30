@@ -10,11 +10,17 @@
     max-width: 400px;
 }
 
-.project-card-header {
+.project-card-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.project-card-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    min-height: 28px;
 }
 
 .project-card-title {

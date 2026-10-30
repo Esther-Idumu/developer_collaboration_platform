@@ -2,16 +2,23 @@ import { Link } from "react-router-dom";
 import StatusPill from "../ui/StatusPill/StatusPill";
 import SkillTag from "../ui/SkillTag/SkillTag";
 import AvatarStack from "../ui/AvatarStack/AvatarStack";
+import Bookmark from "../ui/Bookmark/Bookmark";
 import "./ProjectCard.css";
 
-function ProjectCard({ project }) {
-    const { id, title, description, status, skills = [], members = [], capacity } = project;
+function ProjectCard({ project, onToggleSave }) {
+    const { id, title, description, status, isSaved = false, skills = [], members = [], capacity } = project;
 
     return (
         <article className="project-card">
-            <div className="project-card-header">
+            <div className="project-card-heading">
+                <div className="project-card-top">
+                    <StatusPill status={status} />
+
+                    {onToggleSave && (
+                        <Bookmark saved={isSaved} onToggle={() => onToggleSave(id)} />
+                    )}
+                </div>
                 <h3 className="project-card-title">{title}</h3>
-                <StatusPill status={status} />
             </div>
             
             <p className="project-card-description">{description}</p>

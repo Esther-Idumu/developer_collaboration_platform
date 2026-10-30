@@ -1,14 +1,12 @@
 import { useState } from "react";
 import "./Bookmark.css";
 
-function Bookmark() {
-    const [saved, setSaved] = useState(false);
-
+function Bookmark({ saved = false, onToggle }) {
     return (
-        <button type="button" className={`bookmark ${saved ? "saved" : ""}`} aria-label={saved ? "Saved Project" : "Save Project"} onClick={() => setSaved(prev => !prev)}>
+        <button type="button" className={`bookmark ${saved ? "saved" : ""}`} aria-label={saved ? "Unsave Project" : "Save Project"} onClick={onToggle}>
             <svg xmlns="http://www.w3.org/2000/svg" 
-            width="17" 
-            height="17" 
+            width="14" 
+            height="14" 
             viewBox="0 0 24 24" 
             fill="none" 
             stroke="currentColor" 
