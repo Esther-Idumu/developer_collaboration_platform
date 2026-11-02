@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
-from .serializers import ProjectSerializer, ProjectSummarySerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer
+from .serializers import ProjectSerializer, ProjectSummarySerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer, SavedProjectSerializer, MessageSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application, ProjectMember
+from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application, ProjectMember, SavedProject, Message
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import Q
@@ -379,3 +379,73 @@ class ProjectMemberView(APIView):
         project_member = get_object_or_404(ProjectMember, id=id)
         serializer = ProjectMemberSerializer(project_member)
         return Response (serializer.data)
+
+class SavedProjectsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        saved_projects = (
+            SavedProject.objects
+            .filter(user=request.user, project__is_archived=False)
+            .select_related('project', 'project__project_owner')
+            .prefetch_related('project__project_roles__skills', 'project__project_roles__manual_skills', 'project__project_members__user__profile')
+        )
+        serializer = SavedProjectSerializer(saved_projects, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class SaveProjectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        project = get_object_or_404(
+            Project,
+            id=id,
+            status=Project.ProjectStatus.OPEN,
+            is_archived=False,
+        )
+        if project.project_owner_id == request.user.id:
+            return Response({'message': 'You cannot save your own project.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        saved_project, created = SavedProject.objects.get_or_create(user=request.user, project=project)
+        return Response(
+            {'message': 'Project saved.' if created else 'Project is already saved.', 'is_saved': True},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+    def delete(self, request, id):
+        saved_project = SavedProject.objects.filter(user=request.user, project_id=id)
+        if not saved_project.exists():
+            return Response({'message': 'Project is not in your saved projects.'}, status=status.HTTP_404_NOT_FOUND)
+        saved_project.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProjectMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_project_for_member(self, request, id):
+        project = get_object_or_404(Project, id=id)
+        is_owner = project.project_owner_id == request.user.id
+        is_member = ProjectMember.objects.filter(project=project, user=request.user).exists()
+        if not (is_owner or is_member):
+            return None
+        return project
+
+    def get(self, request, id):
+        project = self.get_project_for_member(request, id)
+        if project is None:
+            return Response({'message': 'You do not have access to this project chat.'}, status=status.HTTP_403_FORBIDDEN)
+        messages = project.messages.select_related('sender').all()
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, id):
+        project = self.get_project_for_member(request, id)
+        if project is None:
+            return Response({'message': 'You do not have access to this project chat.'}, status=status.HTTP_403_FORBIDDEN)
+        serializer = MessageSerializer(data=request.data)
+        if serializer.is_valid():
+            message = serializer.save(project=project, sender=request.user)
+            return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

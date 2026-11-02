@@ -86,10 +86,11 @@ class DeveloperSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     role = serializers.CharField(source='headline', read_only=True)
     skills = serializers.SerializerMethodField()
+    bio = serializers.CharField(read_only=True)
 
     class Meta:
         model = Profile
-        fields = ['id', 'name', 'role', 'skills', 'github', 'portfolio']
+        fields = ['id', 'name', 'role', 'bio', 'skills', 'github', 'portfolio']
         read_only_fields = fields
 
     def get_name(self, profile):

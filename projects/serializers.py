@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from projects.models import Project, ProjectRole, Role, Skill, ManualSkill, Application, ProjectMember
+from projects.models import Project, ProjectRole, Role, Skill, ManualSkill, Application, ProjectMember, SavedProject, Message
 from accounts.utils import get_display_name
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -172,3 +172,27 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
             'joined_at'
         ]
         read_only_fields = fields
+
+
+class SavedProjectSerializer(serializers.ModelSerializer):
+    project = ProjectSummarySerializer(read_only=True)
+
+    class Meta:
+        model = SavedProject
+        fields = ['id', 'project', 'saved_at']
+        read_only_fields = fields
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ['id', 'project', 'sender', 'content', 'created_at']
+        read_only_fields = ['id', 'project', 'sender', 'created_at']
+
+    def get_sender(self, message):
+        return {
+            'id': message.sender_id,
+            'name': get_display_name(message.sender),
+        }

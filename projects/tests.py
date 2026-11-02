@@ -950,3 +950,100 @@ class ApplicationAPITests(APITestCase):
             self.project_role.project_members.count(),
             1
         )
+
+class SavedProjectsAPITests(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(email='saved-owner@test.com', password='password123')
+        self.user = User.objects.create_user(email='saved-user@test.com', password='password123')
+        self.project = Project.objects.create(
+            title='Saved Project', description='A project to save.', project_owner=self.owner
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_user_can_save_open_project(self):
+        response = self.client.post(reverse('save-project', kwargs={'id': self.project.id}))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['is_saved'])
+
+    def test_saving_same_project_twice_does_not_duplicate(self):
+        url = reverse('save-project', kwargs={'id': self.project.id})
+        self.client.post(url)
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.user.saved_projects.count(), 1)
+
+    def test_user_can_list_saved_projects(self):
+        self.client.post(reverse('save-project', kwargs={'id': self.project.id}))
+        response = self.client.get(reverse('saved-projects'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['project']['id'], self.project.id)
+
+    def test_user_can_remove_saved_project(self):
+        self.client.post(reverse('save-project', kwargs={'id': self.project.id}))
+        response = self.client.delete(reverse('save-project', kwargs={'id': self.project.id}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.user.saved_projects.count(), 0)
+
+    def test_user_cannot_save_own_project(self):
+        own_project = Project.objects.create(
+            title='My Project', description='Owned by current user.', project_owner=self.user
+        )
+        response = self.client.post(reverse('save-project', kwargs={'id': own_project.id}))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_cannot_save_non_open_project(self):
+        self.project.status = Project.ProjectStatus.IN_PROGRESS
+        self.project.save(update_fields=['status'])
+        response = self.client.post(reverse('save-project', kwargs={'id': self.project.id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class ProjectMessagesAPITests(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(email='chat-owner@test.com', password='password123')
+        self.member = User.objects.create_user(email='chat-member@test.com', password='password123')
+        self.outsider = User.objects.create_user(email='chat-outsider@test.com', password='password123')
+        self.project = Project.objects.create(
+            title='Team Project', description='A project with a team.', project_owner=self.owner
+        )
+        self.membership = ProjectMember.objects.create(project=self.project, user=self.member)
+
+    def test_project_owner_can_send_and_read_messages(self):
+        self.client.force_authenticate(user=self.owner)
+        url = reverse('project-messages', kwargs={'id': self.project.id})
+        response = self.client.post(url, {'content': 'Welcome to the project!'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['sender']['id'], self.owner.id)
+        listed = self.client.get(url)
+        self.assertEqual(listed.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(listed.data), 1)
+
+    def test_project_member_can_send_message(self):
+        self.client.force_authenticate(user=self.member)
+        response = self.client.post(
+            reverse('project-messages', kwargs={'id': self.project.id}),
+            {'content': 'Which platform should we use?'}, format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_non_member_cannot_read_project_chat(self):
+        self.client.force_authenticate(user=self.outsider)
+        response = self.client.get(reverse('project-messages', kwargs={'id': self.project.id}))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_non_member_cannot_send_project_message(self):
+        self.client.force_authenticate(user=self.outsider)
+        response = self.client.post(
+            reverse('project-messages', kwargs={'id': self.project.id}),
+            {'content': 'Hello'}, format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_empty_message_is_rejected(self):
+        self.client.force_authenticate(user=self.member)
+        response = self.client.post(
+            reverse('project-messages', kwargs={'id': self.project.id}),
+            {'content': ''}, format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

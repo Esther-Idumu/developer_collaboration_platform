@@ -1,9 +1,12 @@
 from django.urls import path
-from .views import ProjectView, MyProjectsView, ProjectDetailView, UserProjectsView, RoleView, ProjectRoleView, ProjectStatusView, ArchivedProjectsView, SkillView, ManualSkillView, ApplicationView, ApplicationDetailView, ProjectApplicationsView, ProjectRoleApplicationsView, WithdrawApplicationView, ApplicationDecisionView, ProjectMemberView, ProjectMembersView
+from .views import ProjectView, MyProjectsView, ProjectDetailView, UserProjectsView, RoleView, ProjectRoleView, ProjectStatusView, ArchivedProjectsView, SkillView, ManualSkillView, ApplicationView, ApplicationDetailView, ProjectApplicationsView, ProjectRoleApplicationsView, WithdrawApplicationView, ApplicationDecisionView, ProjectMemberView, ProjectMembersView, SavedProjectsView, SaveProjectView, ProjectMessagesView
 
 urlpatterns = [
     path('', ProjectView.as_view(), name='projects'),
     path('mine', MyProjectsView.as_view(), name='my-projects'),
+    path('saved', SavedProjectsView.as_view(), name='saved-projects'),
+    path('<int:id>/save', SaveProjectView.as_view(), name='save-project'),
+    path('<int:id>/messages', ProjectMessagesView.as_view(), name='project-messages'),
     path('user/<int:id>', UserProjectsView.as_view(), name='user-projects'),
     path('roles', RoleView.as_view(), name='roles'),
     path('project-roles', ProjectRoleView.as_view(), name='project-roles'),

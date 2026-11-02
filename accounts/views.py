@@ -10,6 +10,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 class RegisterView(APIView):
     def post(self, request):
@@ -178,7 +179,26 @@ class DeveloperListView(APIView):
             .exclude(full_name='')
             .select_related('user')
             .prefetch_related('skills', 'manual_skills')
-            .order_by('-user__date_joined')[:limit]
+            .order_by('-user__date_joined')
         )
+
+        search = request.query_params.get('search', '').strip()
+        if search:
+            profiles = profiles.filter(
+                Q(full_name__icontains=search)
+                | Q(headline__icontains=search)
+                | Q(bio__icontains=search)
+                | Q(skills__title__icontains=search)
+                | Q(manual_skills__title__icontains=search)
+            ).distinct()
+
+        skill = request.query_params.get('skill', '').strip()
+        if skill:
+            profiles = profiles.filter(
+                Q(skills__title__icontains=skill)
+                | Q(manual_skills__title__icontains=skill)
+            ).distinct()
+
+        profiles = profiles[:limit]
         serializer = DeveloperSerializer(profiles, many=True)
         return Response(serializer.data)

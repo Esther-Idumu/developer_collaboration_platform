@@ -74,3 +74,27 @@ class ProjectMember(models.Model):
                 name='unique_project_membership'
             )
         ]
+
+class SavedProject(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_projects")
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="saved_by")
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "project"],
+                name="unique_saved_project"
+            )
+        ]
+        ordering = ["-saved_at"]
+
+
+class Message(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="project_messages")
+    content = models.TextField(max_length=5000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
