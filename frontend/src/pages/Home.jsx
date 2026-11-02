@@ -5,6 +5,10 @@ import Topbar from "../components/Topbar/Topbar";
 import ProjectCard from "../components/ProjectCard/ProjectCard";
 import ProjectRow from "../components/ProjectRow/ProjectRow";
 import DeveloperCard from "../components/DeveloperCard/DeveloperCard";
+import Tabs from "../components/Tab/Tabs";
+import SearchInput from "../components/SearchInput/SearchInput";
+import Button from "../components/ui/Button/Button";
+
 
 const people = [
     { id: 1, name: "Kofi Mensah" },
@@ -93,8 +97,17 @@ const developer = {
     portfolio: "https://amara.dev",
 };
 
+const projectTabs = [
+    { id: "all", label: "All" },
+    { id: "owned", label: "Owned"},
+    { id: "joined", label: "Joined"},
+    { id: "saved", label: "Saved"},
+];
+
 function Home() {
     const [savedIds, setSavedIds] = useState([]);
+    const [activeTab, setActiveTab] = useState("owned");
+    const [query, setQuery] = useState("");
 
     function toggleSave(id) {
         setSavedIds((prev) =>
@@ -109,7 +122,36 @@ function Home() {
             <div className="main-area">
                 <Topbar />
 
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <SearchInput value={query} onChange={setQuery} placeholder="Search your projects..." />
+                    <Button
+                        icon={
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M7 12h10" />
+                                <path d="M10 18h4" />
+                            </svg>
+                        }
+                    >
+                        Filters
+                    </Button>
+                    <Button
+                        variant="primary"
+                        to="/projects/new"
+                        icon={
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M5 12h14" />
+                                <path d="M12 5v14" />
+                            </svg>
+                        }
+                    >
+                        New project
+                    </Button>
+                </div>
+
                 <main className="home-content">
+                    <Tabs tabs={projectTabs} activeTab={activeTab} onChange={setActiveTab} />
+
                     <div>
                         {myProjects.map((project) => (
                             <ProjectRow key={project.id} project={project} />

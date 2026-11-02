@@ -1,0 +1,33 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: var(--font-semibold);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.button-primary {
+    background: var(--indigo-accent);
+    color: var(--surface);
+}
+
+.button-primary:hover {
+    filter: brightness(0.93);
+}
+
+.button-secondary {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.button-secondary:hover {
+    background: var(--bg);
+}
