@@ -1,0 +1,42 @@
+.section-card {
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.section-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.section-card-title {
+    font-size: 15px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+}
+
+.section-card-link {
+    font-size: 12px;
+    font-weight: var(--font-medium);
+    color: var(--indigo-accent);
+}
+
+.section-card-link:hover {
+    text-decoration: underline;
+}
+
+/* Loading, error and empty text inside a section */
+.section-message {
+    padding: 16px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.section-message-error {
+    color: #B91C1C;
+}

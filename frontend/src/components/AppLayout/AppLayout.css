@@ -1,0 +1,17 @@
+.app-layout {
+    display: flex;
+    height: 100vh;
+}
+
+.main-area {
+    flex: 1;
+    min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg);
+}
+
+.page-content {
+    max-width: 1320px;
+    padding: 24px;
+}

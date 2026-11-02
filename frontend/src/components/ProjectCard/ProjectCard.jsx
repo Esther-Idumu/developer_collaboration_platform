@@ -11,16 +11,17 @@ function ProjectCard({ project, onToggleSave }) {
     return (
         <article className="project-card">
             <div className="project-card-heading">
-                <div className="project-card-top">
+                <h3 className="project-card-title">{title}</h3>
+
+                <div className="project-card-meta">
                     <StatusPill status={status} />
 
                     {onToggleSave && (
                         <Bookmark saved={isSaved} onToggle={() => onToggleSave(id)} />
                     )}
                 </div>
-                <h3 className="project-card-title">{title}</h3>
             </div>
-            
+
             <p className="project-card-description">{description}</p>
 
             {skills.length > 0 && (

@@ -29,6 +29,7 @@ class User(AbstractUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100, blank=True)
+    headline = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True)
     experience = models.TextField(blank=True)
     school = models.CharField(max_length=100, blank=True)

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from accounts.models import User, Profile
 from django.contrib.auth.password_validation import validate_password as validate
 from django.contrib.auth import authenticate
+from accounts.utils import get_display_name
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -52,6 +53,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = [
             'full_name',
+            'headline',
             'bio',
             'experience',
             'school',
@@ -78,3 +80,22 @@ class ProfileSerializer(serializers.ModelSerializer):
 class ResendVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
+
+class DeveloperSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='user_id', read_only=True)
+    name = serializers.SerializerMethodField()
+    role = serializers.CharField(source='headline', read_only=True)
+    skills = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'name', 'role', 'skills', 'github', 'portfolio']
+        read_only_fields = fields
+
+    def get_name(self, profile):
+        return get_display_name(profile.user)
+
+    def get_skills(self, profile):
+        titles = [skill.title for skill in profile.skills.all()]
+        titles += [skill.title for skill in profile.manual_skills.all()]
+        return list(dict.fromkeys(titles))

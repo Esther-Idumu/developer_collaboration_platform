@@ -1,11 +1,22 @@
 from rest_framework.views import APIView
-from .serializers import ProjectSerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer
+from .serializers import ProjectSerializer, ProjectSummarySerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application, ProjectMember
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.db.models import Q
+
+def with_summary_data(queryset):
+    """Prefetch everything ProjectSummarySerializer reads, newest projects first."""
+    return queryset.prefetch_related(
+        'project_roles__skills',
+        'project_roles__manual_skills',
+        'project_roles__applications',
+        'project_members__user__profile',
+    ).order_by('-created_at')
+
 
 class ProjectView(APIView):
     permission_classes = [IsAuthenticated]
@@ -26,8 +37,25 @@ class ProjectView(APIView):
         )
 
     def get(self, request):
-        projects = Project.objects.filter(status=Project.ProjectStatus.OPEN, is_archived=False)
-        serializer = ProjectSerializer(projects, many=True)
+        projects = with_summary_data(
+            Project.objects.filter(status=Project.ProjectStatus.OPEN, is_archived=False)
+        )
+        serializer = ProjectSummarySerializer(projects, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class MyProjectsView(APIView):
+    """Projects the current user owns or is a member of."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        projects = with_summary_data(
+            Project.objects.filter(
+                Q(project_owner=request.user) | Q(project_members__user=request.user),
+                is_archived=False
+            ).distinct()
+        )
+        serializer = ProjectSummarySerializer(projects, many=True, context={'request': request})
         return Response(serializer.data)
 
 class ProjectDetailView(APIView):

@@ -79,7 +79,7 @@ function Login() {
                 userData
             );
 
-            navigate("/");
+            navigate("/home");
 
         } catch (error) {
 

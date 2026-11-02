@@ -12,18 +12,23 @@
 
 .project-card-heading {
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
 }
 
-.project-card-top {
+.project-card-meta {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    min-height: 28px;
+    flex-shrink: 0;
+    gap: 6px;
 }
 
 .project-card-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 16px;
     font-weight: var(--font-semibold);
     color: var(--text);
@@ -49,7 +54,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     margin-top: 2px;
     padding-top: 12px;
     border-top: 1px solid var(--border);

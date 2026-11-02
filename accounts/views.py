@@ -1,6 +1,6 @@
 from .models import User, Profile
 from rest_framework.views import APIView
-from .serializers import RegisterSerializer, LoginSerializer, ProfileSerializer, ResendVerificationSerializer
+from .serializers import RegisterSerializer, LoginSerializer, ProfileSerializer, ResendVerificationSerializer, DeveloperSerializer
 from .services.email_verification import send_verification_email
 from rest_framework.response import Response
 from rest_framework import status
@@ -59,6 +59,7 @@ class MeView(APIView):
         profile_serializer = ProfileSerializer(request.user.profile)
 
         return Response({
+            "id": request.user.id,
             "email": request.user.email,
             "profile": profile_serializer.data
         })
@@ -159,3 +160,25 @@ class ProfileView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class DeveloperListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            limit = max(1, min(int(request.query_params.get('limit', 12)), 50))
+        except ValueError:
+            limit = 12
+
+        profiles = (
+            Profile.objects
+            .filter(user__is_email_verified=True)
+            .exclude(user=request.user)
+            .exclude(full_name='')
+            .select_related('user')
+            .prefetch_related('skills', 'manual_skills')
+            .order_by('-user__date_joined')[:limit]
+        )
+        serializer = DeveloperSerializer(profiles, many=True)
+        return Response(serializer.data)
