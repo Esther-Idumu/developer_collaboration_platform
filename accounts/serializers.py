@@ -57,10 +57,6 @@ MAX_BIO_LENGTH = 280
 
 
 class SkillTitlesField(serializers.ListField):
-    """
-    Readable skill names (standard + manual) when reading.
-    On write, a list of names that REPLACES the profile's skills (see ProfileSerializer.update).
-    """
     child = serializers.CharField(max_length=50)
 
     def get_attribute(self, profile):
@@ -70,16 +66,12 @@ class SkillTitlesField(serializers.ListField):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    # Read-only extras so a profile page needs no second lookup.
     id = serializers.IntegerField(source='user_id', read_only=True)
     name = serializers.SerializerMethodField()
     joined_at = serializers.DateTimeField(source='user.date_joined', read_only=True)
     avatar_url = serializers.SerializerMethodField()
-
-    # Write-only: the uploaded photo. Read it back through `avatar_url`.
     avatar = serializers.FileField(write_only=True, required=False)
-
-    # `skills` / `manual_skills` stay as ids; `skill_titles` is the by-name version.
+    remove_avatar = serializers.BooleanField(write_only=True, required=False, default=False)
     skill_titles = SkillTitlesField(required=False, max_length=MAX_SKILLS)
 
     class Meta:
@@ -93,6 +85,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'open_to_collaborate',
             'avatar',
             'avatar_url',
+            'remove_avatar',
             'bio',
             'experience',
             'school',
@@ -144,6 +137,11 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def update(self, profile, validated_data):
         titles = validated_data.pop('skill_titles', None)
+        remove_avatar = validated_data.pop('remove_avatar', False)
+
+        if remove_avatar and 'avatar' not in validated_data and profile.avatar:
+            validated_data['avatar'] = ''
+
         old_avatar = profile.avatar.name if 'avatar' in validated_data and profile.avatar else None
 
         with transaction.atomic():

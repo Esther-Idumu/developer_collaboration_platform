@@ -1,0 +1,104 @@
+.application-filters {
+    position: relative;
+}
+
+.application-filters-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 300px;
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+}
+
+.application-filters-heading {
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: var(--font-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.application-filters-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 16px;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.application-filters-option input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--indigo-accent);
+}
+
+.application-filters-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+}
+
+.application-filters-dot-pending {
+    background: #f59e0b;
+}
+
+.application-filters-dot-accepted {
+    background: #10b981;
+}
+
+.application-filters-dot-rejected {
+    background: #ef4444;
+}
+
+.application-filters-dot-withdrawn {
+    background: #94a3b8;
+}
+
+.application-filters-divider {
+    height: 1px;
+    margin: 8px 0;
+    background: var(--border);
+}
+
+.application-filters-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 16px;
+}
+
+.application-filters-select:focus {
+    outline: none;
+    border-color: var(--indigo-accent);
+}
+
+.application-filters-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.application-filters-clear {
+    padding: 6px 4px;
+    border: none;
+    background: none;
+    color: var(--indigo-accent);
+    font-size: 15px;
+    font-weight: var(--font-semibold);
+}

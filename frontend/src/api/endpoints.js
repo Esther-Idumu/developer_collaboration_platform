@@ -35,8 +35,9 @@ export async function getDevelopers({ search = '', skill = '', limit = 50, signa
     return developers.map(toDeveloper);
 }
 
-export function getSavedProjects(signal) {
-    return apiFetch('/projects/saved', { signal });
+export async function getSavedProjects(signal) {
+    const saved = await apiFetch('/projects/saved', { signal });
+    return saved.map((entry) => toProject(entry.project));
 }
 
 export function saveProject(projectId) {
@@ -58,19 +59,60 @@ export function sendProjectMessage(projectId, content) {
     });
 }
 
-// Full profile of any user (use your own id for "My Profile").
 export function getProfile(id, signal) {
     return apiFetch(`/accounts/profile/${id}`, { signal });
 }
 
-// Projects the user owns or belongs to; each project's `role` is relative to THAT user.
 export async function getUserProjects(id, signal) {
     const projects = await apiFetch(`/projects/user/${id}`, { signal });
     return projects.map(toProject);
 }
 
-// `changes` is a plain object (JSON) or a FormData when a photo is included.
-// Resolves with the updated profile.
 export function updateMyProfile(changes) {
     return apiFetch("/accounts/profile", { method: "PATCH", body: changes });
+}
+
+
+function toPerson(person) {
+    return { ...person, avatarUrl: person.avatar_url };
+}
+
+function toApplication(application) {
+    return {
+        id: application.id,
+        status: application.status,
+        message: application.message,
+        role: application.role,
+        project: application.project,
+        createdAt: application.created_at,
+        updatedAt: application.updated_at,
+        viewedAt: application.viewed_at,
+        applicant: toPerson(application.applicant),
+        owner: toPerson(application.owner),
+    };
+}
+
+export async function getReceivedApplications(signal) {
+    const applications = await apiFetch("/projects/applications/received", { signal });
+    return applications.map(toApplication);
+}
+
+export async function getSentApplications(signal) {
+    const applications = await apiFetch("/projects/applications/sent", { signal });
+    return applications.map(toApplication);
+}
+
+export async function markApplicationViewed(applicationId) {
+    return toApplication(await apiFetch(`/projects/applications/${applicationId}/viewed`, { method: "PATCH" }));
+}
+
+export function decideApplication(applicationId, decision) {
+    return apiFetch(`/projects/applications/${applicationId}/decision`, {
+        method: "PATCH",
+        body: { decision },
+    });
+}
+
+export function withdrawApplication(applicationId) {
+    return apiFetch(`/projects/applications/${applicationId}/withdraw`, { method: "PATCH" });
 }

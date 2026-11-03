@@ -13,6 +13,7 @@ function EditProfileModal({ profile, onClose, onSaved }) {
     const [headline, setHeadline] = useState(profile.headline);
     const [photo, setPhoto] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [removePhoto, setRemovePhoto] = useState(false);
     const [photoError, setPhotoError] = useState("");
     const [error, setError] = useState("");
     const [isSaving, setIsSaving] = useState(false);
@@ -46,8 +47,16 @@ function EditProfileModal({ profile, onClose, onSaved }) {
         }
 
         setPhotoError("");
+        setRemovePhoto(false);
         setPhoto(file);
         setPreviewUrl(URL.createObjectURL(file));
+    }
+
+    function handleRemovePhoto() {
+        setPhoto(null);
+        setPreviewUrl(null);
+        setPhotoError("");
+        setRemovePhoto(true);
     }
 
     async function handleSubmit(event) {
@@ -68,6 +77,10 @@ function EditProfileModal({ profile, onClose, onSaved }) {
 
         if (headline.trim() !== profile.headline) {
             changes.headline = headline.trim();
+        }
+
+        if (removePhoto && profile.avatar_url) {
+            changes.remove_avatar = true;
         }
 
         if (!photo && Object.keys(changes).length === 0) {
@@ -95,16 +108,26 @@ function EditProfileModal({ profile, onClose, onSaved }) {
         }
     }
 
+    const hasPhoto = !removePhoto && Boolean(previewUrl ?? profile.avatar_url);
+
     return (
         <Modal title="Edit profile" onClose={onClose} isBusy={isSaving}>
             <form onSubmit={handleSubmit} noValidate>
                 <div className="edit-photo">
-                    <Avatar name={fullName || profile.name} avatarUrl={previewUrl ?? profile.avatar_url} size={72} />
+                    <Avatar name={fullName || profile.name} avatarUrl={removePhoto ? null : (previewUrl ?? profile.avatar_url)} size={72} />
 
                     <div className="edit-photo-controls">
-                        <Button size="sm" onClick={() => fileInputRef.current.click()} disabled={isSaving}>
-                            Change photo
-                        </Button>
+                        <div className="edit-photo-buttons">
+                            <Button size="sm" onClick={() => fileInputRef.current.click()} disabled={isSaving}>
+                                Change photo
+                            </Button>
+
+                            {hasPhoto && (
+                                <Button size="sm" onClick={handleRemovePhoto} disabled={isSaving}>
+                                    Remove photo
+                                </Button>
+                            )}
+                        </div>
 
                         <p className={`edit-photo-hint ${photoError ? "edit-photo-hint-error" : ""}`}>
                             {photoError || "JPG or PNG, up to 2 MB"}

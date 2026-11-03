@@ -1,11 +1,12 @@
 from rest_framework.views import APIView
-from .serializers import ProjectSerializer, ProjectSummarySerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer, SavedProjectSerializer, MessageSerializer
+from .serializers import ProjectSerializer, ProjectSummarySerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer, SavedProjectSerializer, MessageSerializer, ApplicationDetailSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application, ProjectMember, SavedProject, Message
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.utils import timezone
 from django.db.models import Q
 from accounts.models import User
 
@@ -293,6 +294,59 @@ class ApplicationView(APIView):
         applications = Application.objects.filter(user=request.user)
         serializer = ApplicationSerializer(applications, many=True)
         return Response(serializer.data)
+
+def with_application_data(queryset):
+    """Select/prefetch everything ApplicationDetailSerializer reads, newest first."""
+    return queryset.select_related(
+        'user__profile',
+        'project_role__role',
+        'project_role__project__project_owner__profile',
+    ).prefetch_related(
+        'user__profile__skills',
+        'user__profile__manual_skills',
+    ).order_by('-created_at')
+
+
+class ReceivedApplicationsView(APIView):
+    """Applications to roles on projects the current user owns."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        applications = with_application_data(
+            Application.objects.filter(project_role__project__project_owner=request.user)
+        )
+        serializer = ApplicationDetailSerializer(applications, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class SentApplicationsView(APIView):
+    """Applications the current user has sent."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        applications = with_application_data(Application.objects.filter(user=request.user))
+        serializer = ApplicationDetailSerializer(applications, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class ApplicationViewedView(APIView):
+    """The project owner opened an application: record it the first time."""
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, id):
+        application = get_object_or_404(
+            with_application_data(
+                Application.objects.filter(project_role__project__project_owner=request.user)
+            ),
+            id=id,
+        )
+        if application.viewed_at is None:
+            application.viewed_at = timezone.now()
+            # update_fields keeps updated_at (the decision time) untouched
+            application.save(update_fields=['viewed_at'])
+        serializer = ApplicationDetailSerializer(application, context={'request': request})
+        return Response(serializer.data)
+
 
 class ApplicationDetailView(APIView):
     permission_classes = [IsAuthenticated]

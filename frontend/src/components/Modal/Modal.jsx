@@ -5,7 +5,7 @@ import "./Modal.css";
 const FOCUSABLE =
     'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function Modal({ title, onClose, isBusy = false, children }) {
+function Modal({ title, onClose, isBusy = false, size = "md", children }) {
     const dialogRef = useRef(null);
     const onCloseRef = useRef(onClose);
     const isBusyRef = useRef(isBusy);
@@ -64,19 +64,31 @@ function Modal({ title, onClose, isBusy = false, children }) {
         };
     }, []);
 
+    // "lg" has no built-in header: the content brings its own header and close button.
+    const isLarge = size === "lg";
+
     return createPortal(
         <div className="modal-backdrop">
-            <div className="modal" role="dialog" aria-modal="true" aria-labelledby={titleId} ref={dialogRef}>
-                <header className="modal-header">
-                    <h2 className="modal-title" id={titleId}>{title}</h2>
+            <div
+                className={isLarge ? "modal modal-lg" : "modal"}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={isLarge ? undefined : titleId}
+                aria-label={isLarge ? title : undefined}
+                ref={dialogRef}
+            >
+                {!isLarge && (
+                    <header className="modal-header">
+                        <h2 className="modal-title" id={titleId}>{title}</h2>
 
-                    <button type="button" className="modal-close" aria-label="Close" disabled={isBusy} onClick={onClose}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
-                        </svg>
-                    </button>
-                </header>
+                        <button type="button" className="modal-close" aria-label="Close" disabled={isBusy} onClick={onClose}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M18 6 6 18" />
+                                <path d="m6 6 12 12" />
+                            </svg>
+                        </button>
+                    </header>
+                )}
 
                 {children}
             </div>

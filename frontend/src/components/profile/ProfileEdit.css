@@ -122,6 +122,12 @@
     gap: 8px;
 }
 
+.edit-photo-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .edit-photo-hint {
     font-size: 12px;
     color: var(--text-secondary);

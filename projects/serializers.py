@@ -170,6 +170,63 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'updated_at'
         ]
 
+class ApplicationDetailSerializer(serializers.ModelSerializer):
+    """An application with the applicant, the owner, the role and the project already filled in."""
+    role = serializers.CharField(source='project_role.role.title', read_only=True)
+    project = serializers.SerializerMethodField()
+    applicant = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Application
+        fields = [
+            'id',
+            'status',
+            'message',
+            'created_at',
+            'updated_at',
+            'viewed_at',
+            'role',
+            'project',
+            'applicant',
+            'owner',
+        ]
+        read_only_fields = fields
+
+    def _person(self, user):
+        profile = getattr(user, 'profile', None)
+        return {
+            'id': user.id,
+            'name': get_display_name(user),
+            'avatar_url': get_avatar_url(profile, self.context.get('request')),
+        }
+
+    def get_project(self, application):
+        project = application.project_role.project
+        return {'id': project.id, 'title': project.title, 'status': project.status}
+
+    def get_owner(self, application):
+        return self._person(application.project_role.project.project_owner)
+
+    def get_applicant(self, application):
+        user = application.user
+        profile = getattr(user, 'profile', None)
+        person = self._person(user)
+
+        skills = []
+        if profile:
+            skills = [skill.title for skill in profile.skills.all()]
+            skills += [skill.title for skill in profile.manual_skills.all()]
+
+        person.update({
+            'headline': profile.headline if profile else '',
+            'github': profile.github if profile else '',
+            'portfolio': profile.portfolio if profile else '',
+            'skills': skills,
+        })
+        return person
+
+
 class ProjectMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectMember

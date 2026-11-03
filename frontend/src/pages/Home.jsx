@@ -48,7 +48,6 @@ function Home() {
                         </p>
                         <div className="empty-state-actions">
                             <Button variant="primary" to="/projects/new">Create a project</Button>
-                            <Button to="/discover">Browse projects</Button>
                         </div>
                     </div>
                 )}
@@ -62,7 +61,7 @@ function Home() {
                 )}
             </SectionCard>
 
-            <SectionCard title="Featured Projects" linkTo="/discover" linkLabel="View all">
+            <SectionCard title="Featured Projects">
                 {featuredLoading && <Message>Loading projects...</Message>}
 
                 {openProjects.error && (

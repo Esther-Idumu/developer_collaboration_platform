@@ -9,6 +9,8 @@ import VerifyEmail from './pages/VerifyEmail'
 import CheckEmail from './pages/CheckEmail'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
+import MyProjects from './pages/MyProjects'
+import Applications from './pages/Applications'
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
       <Route path="/check-email" element={<CheckEmail />} />
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route path="/home" element={<Home />} />
+        <Route path="/my-projects" element={<MyProjects />} />
+        <Route path="/applications" element={<Applications />} />
         <Route path="/profile/:id" element={<Profile />} />
       </Route>
     </Routes>

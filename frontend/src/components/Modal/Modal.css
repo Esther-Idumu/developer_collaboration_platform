@@ -50,3 +50,14 @@
     background: var(--bg);
     color: var(--text);
 }
+
+/* Large variant: scrolling body + pinned footer, content supplies its own padding */
+.modal-lg {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-width: 960px;
+    max-height: calc(100vh - 80px);
+    padding: 0;
+    overflow: hidden;
+}

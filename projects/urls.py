@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ProjectView, MyProjectsView, ProjectDetailView, UserProjectsView, RoleView, ProjectRoleView, ProjectStatusView, ArchivedProjectsView, SkillView, ManualSkillView, ApplicationView, ApplicationDetailView, ProjectApplicationsView, ProjectRoleApplicationsView, WithdrawApplicationView, ApplicationDecisionView, ProjectMemberView, ProjectMembersView, SavedProjectsView, SaveProjectView, ProjectMessagesView
+from .views import ProjectView, MyProjectsView, ProjectDetailView, UserProjectsView, RoleView, ProjectRoleView, ProjectStatusView, ArchivedProjectsView, SkillView, ManualSkillView, ApplicationView, ApplicationDetailView, ProjectApplicationsView, ProjectRoleApplicationsView, WithdrawApplicationView, ApplicationDecisionView, ProjectMemberView, ProjectMembersView, SavedProjectsView, SaveProjectView, ProjectMessagesView, ReceivedApplicationsView, SentApplicationsView, ApplicationViewedView
 
 urlpatterns = [
     path('', ProjectView.as_view(), name='projects'),
@@ -14,6 +14,9 @@ urlpatterns = [
     path('skills', SkillView.as_view(), name='skills'),
     path('manual-skills', ManualSkillView.as_view(), name='manual-skills'),
     path('applications', ApplicationView.as_view(), name='applications'),
+    path('applications/received', ReceivedApplicationsView.as_view(), name='received-applications'),
+    path('applications/sent', SentApplicationsView.as_view(), name='sent-applications'),
+    path('applications/<int:id>/viewed', ApplicationViewedView.as_view(), name='application-viewed'),
     path('applications/<int:id>', ApplicationDetailView.as_view(), name='application-details'),
     path('applications/<int:id>/withdraw', WithdrawApplicationView.as_view(), name='withdraw-applications'),
     path('applications/<int:id>/decision', ApplicationDecisionView.as_view(), name='application-decision'),

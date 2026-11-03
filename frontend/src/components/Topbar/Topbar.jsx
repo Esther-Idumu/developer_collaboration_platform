@@ -45,7 +45,7 @@ function Topbar({ hasNotifications = false }) {
         const trimmed = query.trim();
 
         if (trimmed) {
-            navigate(`/discover?q=${encodeURIComponent(trimmed)}`);
+            navigate(`/developers?search=${encodeURIComponent(trimmed)}`);
         }
     }
 
