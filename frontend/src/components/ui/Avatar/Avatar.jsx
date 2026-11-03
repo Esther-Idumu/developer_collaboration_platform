@@ -15,13 +15,13 @@ export function getInitials(name = "") {
 }
 
 function Avatar({ name, avatarUrl, size }) {
-    const [imageFailed, setImageFailed] = useState(false);
-    const showImage = avatarUrl && !imageFailed;
+    const [failedUrl, setFailedUrl] = useState(null);
+    const showImage = avatarUrl && failedUrl !== avatarUrl;
 
     return (
         <span className="avatar" title={name} aria-label={name} style={size ? {"--avatar-size": `${size}px` } : undefined}>
             {showImage ? (
-                <img src={avatarUrl} alt={name} onError={() => setImageFailed(true)} />
+                <img src={avatarUrl} alt={name} onError={() => setFailedUrl(avatarUrl)} />
             ) : (
                 <span className="avatar-initials" aria-hidden="true">
                     {getInitials(name)}

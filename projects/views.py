@@ -7,6 +7,7 @@ from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application,
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import Q
+from accounts.models import User
 
 def with_summary_data(queryset):
     """Prefetch everything ProjectSummarySerializer reads, newest projects first."""
@@ -159,9 +160,19 @@ class ArchivedProjectsView(APIView):
     
 class UserProjectsView(APIView):
     permission_classes = [IsAuthenticated]
+    """Projects a given user owns or is a member of (for their profile page)."""
+
     def get(self, request, id):
-        project = Project.objects.filter(project_owner_id=id, is_archived=False)
-        serializer = ProjectSerializer(project, many=True)
+        user = get_object_or_404(User, id=id)
+        projects = with_summary_data(
+            Project.objects.filter(
+                Q(project_owner=user) | Q(project_members__user=user),
+                is_archived=False
+            ).distinct()
+        )
+        serializer = ProjectSummarySerializer(
+            projects, many=True, context={'request': request, 'role_for': user}
+        )
         return Response(serializer.data)
 
 class RoleView(APIView):

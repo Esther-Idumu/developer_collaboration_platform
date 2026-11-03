@@ -26,10 +26,16 @@ class User(AbstractUser):
     objects = UserManager()
     REQUIRED_FIELDS = []
 
+def avatar_upload_path(instance, filename):
+    return f"avatars/{instance.user_id}/{filename}"
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100, blank=True)
     headline = models.CharField(max_length=100, blank=True)
+    open_to_collaborate = models.BooleanField(default=True)
+    avatar = models.FileField(upload_to=avatar_upload_path, blank=True)
     bio = models.TextField(blank=True)
     experience = models.TextField(blank=True)
     school = models.CharField(max_length=100, blank=True)

@@ -1,0 +1,187 @@
+.profile-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* the page header has its own bottom margin; the gap handles the rest */
+.profile-page .page-header {
+    margin-bottom: 0;
+}
+
+/* Identity card */
+.profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.profile-identity-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-identity-name {
+    font-size: 20px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+}
+
+.profile-identity-role {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.profile-identity-joined {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Cards: a rule under the title, more breathing room than on Home */
+.profile-card {
+    padding: 18px;
+}
+
+.profile-card .section-card-header {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Personal information (reading and editing share this grid) */
+.profile-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px 24px;
+    margin: 0;
+}
+
+.profile-field-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.profile-field-value {
+    margin: 4px 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    font-weight: var(--font-medium);
+    color: var(--text);
+}
+
+.profile-field-value a {
+    color: var(--indigo-accent);
+}
+
+.profile-field-value a:hover {
+    text-decoration: underline;
+}
+
+/* About & skills */
+.profile-bio {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    white-space: pre-line;
+}
+
+.profile-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.profile-empty {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.profile-bio + .profile-empty,
+.profile-empty + .profile-skills,
+.profile-empty + .profile-empty {
+    margin-top: 10px;
+}
+
+/* Stacked fields in the About & skills editor (the Personal information editor is a grid) */
+.profile-form-stack .form-field + .form-field {
+    margin-top: 20px;
+}
+
+/* Projects */
+.profile-projects {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-project {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.profile-project:first-child {
+    padding-top: 0;
+}
+
+.profile-project:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.profile-project-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+}
+
+.profile-project-tags {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 900px) {
+    .profile-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .profile-fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .profile-identity {
+        flex-wrap: wrap;
+    }
+
+    /* wide enough that the Edit profile button drops to its own row instead of squeezing the name */
+    .profile-identity-text {
+        min-width: 160px;
+    }
+
+    .profile-card .section-card-header {
+        flex-wrap: wrap;
+    }
+}

@@ -1,15 +1,8 @@
 import { Link } from "react-router-dom";
 import Avatar from "../ui/Avatar/Avatar";
 import SkillTag from "../ui/SkillTag/SkillTag";
+import { displayLink, githubHandle } from "../../utils/links";
 import "./DeveloperCard.css";
-
-function displayLink(url = "") {
-    return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
-}
-
-function githubHandle(url = "") {
-    return displayLink(url).split("/").pop();
-}
 
 function DeveloperCard({ developer }) {
     const { id, name, role, avatarUrl, skills = [], github, portfolio } = developer;

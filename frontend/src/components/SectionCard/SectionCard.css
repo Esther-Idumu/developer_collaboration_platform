@@ -30,7 +30,6 @@
     text-decoration: underline;
 }
 
-/* Loading, error and empty text inside a section */
 .section-message {
     padding: 16px 0;
     font-size: 14px;
@@ -39,4 +38,10 @@
 
 .section-message-error {
     color: #B91C1C;
+}
+
+.section-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }

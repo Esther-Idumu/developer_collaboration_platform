@@ -1,0 +1,36 @@
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.page-header::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.page-header-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.page-header-back:hover {
+    background: var(--surface);
+    color: var(--text);
+}
+
+.page-header-title {
+    font-size: 18px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+}

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from projects.models import Project, ProjectRole, Role, Skill, ManualSkill, Application, ProjectMember, SavedProject, Message
-from accounts.utils import get_display_name
+from accounts.utils import get_display_name, get_avatar_url
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,8 +47,13 @@ class ProjectSummarySerializer(ProjectSerializer):
         return list(dict.fromkeys(titles))
 
     def get_members(self, project):
+        request = self.context.get('request')
         return [
-            {'id': member.user_id, 'name': get_display_name(member.user)}
+            {
+                'id': member.user_id,
+                'name': get_display_name(member.user),
+                'avatar_url': get_avatar_url(getattr(member.user, 'profile', None), request),
+            }
             for member in project.project_members.all()
         ]
 
@@ -56,12 +61,16 @@ class ProjectSummarySerializer(ProjectSerializer):
         return sum(project_role.no_of_developers for project_role in project.project_roles.all())
 
     def get_role(self, project):
+        """Role of `role_for` in the context (defaults to the requesting user)."""
         request = self.context.get('request')
-        if request is None or not request.user.is_authenticated:
+        subject = self.context.get('role_for')
+        if subject is None and request is not None and request.user.is_authenticated:
+            subject = request.user
+        if subject is None:
             return None
-        if project.project_owner_id == request.user.id:
+        if project.project_owner_id == subject.id:
             return 'owner'
-        if any(member.user_id == request.user.id for member in project.project_members.all()):
+        if any(member.user_id == subject.id for member in project.project_members.all()):
             return 'member'
         return None
 

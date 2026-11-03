@@ -180,3 +180,8 @@
         display: none;
     }
 }
+
+.profile-nav a.active {
+    background-color: var(--indigo-accent);
+    color: var(--surface);
+}

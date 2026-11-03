@@ -116,7 +116,7 @@ function Sidebar() {
 
             <div className="bottom-nav">
                 <div className="profile">
-                    <Avatar name={name} size={34} />
+                    <Avatar name={name} avatarUrl={user.profile?.avatar_url} size={34} />
 
                     <div className="profile-text">
                         <p className="profile-name">{name}</p>

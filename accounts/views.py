@@ -57,7 +57,7 @@ class LoginView(APIView):
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        profile_serializer = ProfileSerializer(request.user.profile)
+        profile_serializer = ProfileSerializer(request.user.profile, context={'request': request})
 
         return Response({
             "id": request.user.id,
@@ -147,10 +147,16 @@ class ProfileView(APIView):
 
     def get(self, request, id):
         profile = get_object_or_404(Profile, user_id=id)
-        serializer = ProfileSerializer(profile)
+        serializer = ProfileSerializer(profile, context={'request': request})
         return Response(serializer.data)
 
-    def patch(self, request):
+    def patch(self, request, id=None):
+        if id is not None and id != request.user.id:
+            return Response(
+                {'detail': 'You can only edit your own profile.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         profile = get_object_or_404(Profile, user=request.user)
         serializer = ProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
 
@@ -200,5 +206,5 @@ class DeveloperListView(APIView):
             ).distinct()
 
         profiles = profiles[:limit]
-        serializer = DeveloperSerializer(profiles, many=True)
+        serializer = DeveloperSerializer(profiles, many=True, context={'request': request})
         return Response(serializer.data)

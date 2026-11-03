@@ -40,7 +40,10 @@ function messageFrom(data, fallback) {
 async function send(path, { method = "GET", body, signal } = {}, token) {
     const headers = {};
 
-    if (body !== undefined) {
+    // FormData (file uploads) must NOT get a Content-Type: the browser adds it with the boundary.
+    const isFormData = body instanceof FormData;
+
+    if (body !== undefined && !isFormData) {
         headers["Content-Type"] = "application/json";
     }
 
@@ -53,7 +56,7 @@ async function send(path, { method = "GET", body, signal } = {}, token) {
             method,
             headers,
             signal,
-            body: body !== undefined ? JSON.stringify(body) : undefined,
+            body: body === undefined || isFormData ? body : JSON.stringify(body),
         });
     } catch (error) {
         if (error.name === "AbortError") {

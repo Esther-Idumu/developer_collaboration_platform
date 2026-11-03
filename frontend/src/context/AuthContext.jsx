@@ -60,6 +60,11 @@ export function AuthProvider({ children }) {
         setUser(userData);
     }
 
+    // Called after the user saves their profile so the sidebar and topbar update at once.
+    function updateProfile(profile) {
+        setUser((current) => (current ? { ...current, profile } : current));
+    }
+
     function logout() {
 
         clearSession();
@@ -74,6 +79,7 @@ export function AuthProvider({ children }) {
                 isLoading,
                 login,
                 logout,
+                updateProfile,
             }}
         >
             {children}
