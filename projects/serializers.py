@@ -19,6 +19,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             'description',
             'status',
             'is_archived',
+            'github_url',
+            'website_url',
             'created_at',
             'updated_at'
         ]
@@ -85,6 +87,66 @@ class ProjectSummarySerializer(ProjectSerializer):
             for application in project_role.applications.all()
             if application.status == Application.ApplicationStatus.PENDING
         )
+
+class ProjectDetailSerializer(ProjectSummarySerializer):
+    """Everything the project page shows: owner, team, roles (with the viewer's application) and saved state."""
+    owner = serializers.SerializerMethodField()
+    team = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
+    is_saved = serializers.SerializerMethodField()
+
+    class Meta(ProjectSummarySerializer.Meta):
+        fields = ProjectSummarySerializer.Meta.fields + ['owner', 'team', 'roles', 'is_saved']
+
+    def _person(self, user):
+        profile = getattr(user, 'profile', None)
+        return {
+            'id': user.id,
+            'name': get_display_name(user),
+            'avatar_url': get_avatar_url(profile, self.context.get('request')),
+            'headline': profile.headline if profile else '',
+        }
+
+    def get_owner(self, project):
+        return self._person(project.project_owner)
+
+    def get_team(self, project):
+        team = []
+        for member in sorted(project.project_members.all(), key=lambda member: member.joined_at):
+            person = self._person(member.user)
+            person['roles'] = [project_role.role.title for project_role in member.project_roles.all()]
+            team.append(person)
+        return team
+
+    def get_roles(self, project):
+        request = self.context.get('request')
+        applications = {}
+        if request is not None and request.user.is_authenticated:
+            applications = {
+                application.project_role_id: application
+                for application in Application.objects.filter(user=request.user, project_role__project=project)
+            }
+
+        roles = []
+        for project_role in project.project_roles.all():
+            application = applications.get(project_role.id)
+            skills = [skill.title for skill in project_role.skills.all()]
+            skills += [skill.title for skill in project_role.manual_skills.all()]
+            roles.append({
+                'id': project_role.id,
+                'title': project_role.role.title,
+                'skills': skills,
+                'no_of_developers': project_role.no_of_developers,
+                'filled': len(project_role.project_members.all()),
+                'my_application': {'id': application.id, 'status': application.status} if application else None,
+            })
+        return roles
+
+    def get_is_saved(self, project):
+        request = self.context.get('request')
+        if request is None or not request.user.is_authenticated:
+            return False
+        return SavedProject.objects.filter(user=request.user, project=project).exists()
 
 class ProjectRoleSerializer(serializers.ModelSerializer):
     class Meta:

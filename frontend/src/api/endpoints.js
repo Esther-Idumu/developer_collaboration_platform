@@ -72,7 +72,6 @@ export function updateMyProfile(changes) {
     return apiFetch("/accounts/profile", { method: "PATCH", body: changes });
 }
 
-
 function toPerson(person) {
     return { ...person, avatarUrl: person.avatar_url };
 }
@@ -115,4 +114,30 @@ export function decideApplication(applicationId, decision) {
 
 export function withdrawApplication(applicationId) {
     return apiFetch(`/projects/applications/${applicationId}/withdraw`, { method: "PATCH" });
+}
+
+export async function getProject(projectId, signal) {
+    const project = await apiFetch(`/projects/${projectId}`, { signal });
+
+    return {
+        ...toProject(project),
+        createdAt: project.created_at,
+        githubUrl: project.github_url,
+        websiteUrl: project.website_url,
+        isSaved: project.is_saved,
+        owner: toPerson(project.owner),
+        team: project.team.map(toPerson),
+        roles: project.roles.map((role) => ({
+            ...role,
+            noOfDevelopers: role.no_of_developers,
+            myApplication: role.my_application,
+        })),
+    };
+}
+
+export function applyToRole(projectRoleId, message) {
+    return apiFetch("/projects/applications", {
+        method: "POST",
+        body: { project_role: projectRoleId, message },
+    });
 }

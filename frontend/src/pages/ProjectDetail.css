@@ -1,0 +1,348 @@
+.project-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.project-page .page-header {
+    margin-bottom: 0;
+}
+
+.project-message {
+    padding: 16px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.project-message-error {
+    color: #B91C1C;
+}
+
+/* Cards */
+.project-card {
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.project-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.project-card-title {
+    font-size: 15px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+}
+
+/* Hero */
+.project-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 24px;
+}
+
+.project-hero-main {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.project-hero-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.project-hero-title {
+    font-size: 24px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.project-hero-summary {
+    max-width: 680px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #334155;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.project-hero-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.project-hero-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.project-hero-error {
+    font-size: 12px;
+    color: #B91C1C;
+}
+
+.project-owner-row {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.project-owner-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.project-owner-name {
+    font-weight: var(--font-medium);
+    color: var(--text);
+}
+
+.project-owner-link:hover .project-owner-name {
+    color: var(--indigo-accent);
+}
+
+.project-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Two columns under the hero */
+.project-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.project-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+/* About */
+.project-about {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 680px;
+}
+
+.project-about-text {
+    font-size: 14px;
+    line-height: 1.65;
+    color: #334155;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.project-about-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #334155;
+}
+
+/* Roles */
+.project-count-pill {
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--status-green-light);
+    color: var(--status-green);
+    font-size: 11px;
+    font-weight: var(--font-medium);
+}
+
+.project-roles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.project-role {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.project-role-main {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.project-role-title {
+    font-size: 14px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+}
+
+.project-role-status {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Team */
+.project-team-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.project-team {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.project-team li:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+}
+
+.project-team-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+}
+
+.project-team-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.project-team-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+}
+
+.project-team-row:hover .project-team-name {
+    color: var(--indigo-accent);
+}
+
+.project-team-sub {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.project-team-badge {
+    flex-shrink: 0;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: #F1F5F9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: var(--font-medium);
+}
+
+.project-team-badge-owner {
+    background: var(--indigo-light);
+    color: var(--indigo-accent);
+}
+
+.project-team-open {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0 2px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.project-team-open-circle {
+    width: 36px;
+    height: 36px;
+    border: 1px dashed #CBD5E1;
+    border-radius: 50%;
+}
+
+/* Links */
+.project-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--indigo-accent);
+    overflow-wrap: anywhere;
+}
+
+.project-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+    .project-columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .project-hero {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .project-hero-actions {
+        align-items: flex-start;
+    }
+}

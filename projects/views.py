@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from .serializers import ProjectSerializer, ProjectSummarySerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer, SavedProjectSerializer, MessageSerializer, ApplicationDetailSerializer
+from .serializers import ProjectSerializer, ProjectSummarySerializer, RoleSerializer, ProjectRoleSerializer, SkillSerializer, ManualSkillSerializer, ApplicationSerializer, ProjectMemberSerializer, SavedProjectSerializer, MessageSerializer, ApplicationDetailSerializer, ProjectDetailSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -18,6 +18,19 @@ def with_summary_data(queryset):
         'project_roles__applications',
         'project_members__user__profile',
     ).order_by('-created_at')
+
+
+def with_detail_data(queryset):
+    """Select/prefetch everything ProjectDetailSerializer reads."""
+    return queryset.select_related('project_owner__profile').prefetch_related(
+        'project_roles__role',
+        'project_roles__skills',
+        'project_roles__manual_skills',
+        'project_roles__project_members',
+        'project_roles__applications',
+        'project_members__user__profile',
+        'project_members__project_roles__role',
+    )
 
 
 class ProjectView(APIView):
@@ -64,8 +77,12 @@ class ProjectDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, id):
-        project = get_object_or_404(Project, id=id)
-        serializer = ProjectSerializer(project)
+        # Archived projects are only visible to their owner.
+        projects = with_detail_data(
+            Project.objects.filter(Q(is_archived=False) | Q(project_owner=request.user))
+        )
+        project = get_object_or_404(projects, id=id)
+        serializer = ProjectDetailSerializer(project, context={'request': request})
         return Response(serializer.data)
 
     def patch(self, request, id):

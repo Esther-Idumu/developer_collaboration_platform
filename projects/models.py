@@ -12,6 +12,8 @@ class Project(models.Model):
     project_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects")
     status = models.CharField(max_length=20, choices=ProjectStatus.choices, default=ProjectStatus.OPEN)
     is_archived = models.BooleanField(default=False)
+    github_url = models.URLField(blank=True)
+    website_url = models.URLField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
