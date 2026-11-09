@@ -12,6 +12,7 @@ import Profile from './pages/Profile'
 import MyProjects from './pages/MyProjects'
 import Applications from './pages/Applications'
 import ProjectDetail from './pages/ProjectDetail'
+import Messages from './pages/Messages'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/my-projects" element={<MyProjects />} />
         <Route path="/applications" element={<Applications />} />
+        <Route path="/messages/:projectId?" element={<Messages />} />
         <Route path="/projects/:id" element={<ProjectDetail />} />
         <Route path="/profile/:id" element={<Profile />} />
       </Route>

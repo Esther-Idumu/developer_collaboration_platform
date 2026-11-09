@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getDisplayName, getHeadline } from "../../utils/user";
 import Avatar from "../ui/Avatar/Avatar";
+import { useUnreadMessages } from "../../hooks/useUnreadMessages";
 import "./Sidebar.css";
 
 const SMALL_SCREEN = "(max-width: 768px)";
@@ -57,10 +58,19 @@ const MENU_ITEMS = [
             </>
         ),
     },
+    {
+        to: "/messages",
+        label: "Messages",
+        showUnread: true,
+        icon: (
+            <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" />
+        ),
+    },
 ];
 
 function Sidebar() {
     const { user } = useAuth();
+    const unreadMessages = useUnreadMessages();
     const [sideBarClosed, setSideBarClosed] = useState(() => window.matchMedia(SMALL_SCREEN).matches );
 
     useEffect(() => {
@@ -110,6 +120,11 @@ function Sidebar() {
                     <NavLink key={item.to} to={item.to}>
                         <NavIcon>{item.icon}</NavIcon>
                         <span className="link-label">{item.label}</span>
+                        {item.showUnread && unreadMessages > 0 && (
+                            <span className="badge" aria-label={`${unreadMessages} unread messages`}>
+                                {unreadMessages > 99 ? "99+" : unreadMessages}
+                            </span>
+                        )}
                     </NavLink>
                 ))}
             </nav>

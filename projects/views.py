@@ -3,12 +3,13 @@ from .serializers import ProjectSerializer, ProjectSummarySerializer, RoleSerial
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application, ProjectMember, SavedProject, Message
+from .models import Project, Role, ProjectRole, Skill, ManualSkill, Application, ProjectMember, SavedProject, Message, ChatReadState
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
 from accounts.models import User
+from accounts.utils import get_display_name, get_avatar_url
 
 def with_summary_data(queryset):
     """Prefetch everything ProjectSummarySerializer reads, newest projects first."""
@@ -313,7 +314,6 @@ class ApplicationView(APIView):
         return Response(serializer.data)
 
 def with_application_data(queryset):
-    """Select/prefetch everything ApplicationDetailSerializer reads, newest first."""
     return queryset.select_related(
         'user__profile',
         'project_role__role',
@@ -325,7 +325,6 @@ def with_application_data(queryset):
 
 
 class ReceivedApplicationsView(APIView):
-    """Applications to roles on projects the current user owns."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -337,7 +336,6 @@ class ReceivedApplicationsView(APIView):
 
 
 class SentApplicationsView(APIView):
-    """Applications the current user has sent."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -503,14 +501,92 @@ class SaveProjectView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+MESSAGE_PAGE_SIZE = 200
+
+
+def chat_projects_for(user):
+    return (
+        Project.objects
+        .filter(Q(project_owner=user) | Q(project_members__user=user), is_archived=False)
+        .distinct()
+    )
+
+
+def can_access_chat(user, project):
+    return project.project_owner_id == user.id or ProjectMember.objects.filter(project=project, user=user).exists()
+
+
+def build_chat_summaries(user, request):
+    projects = list(chat_projects_for(user).prefetch_related('project_members'))
+    read_at = {state.project_id: state.last_read_at for state in ChatReadState.objects.filter(user=user)}
+    joined_at = {member.project_id: member.joined_at for member in ProjectMember.objects.filter(user=user)}
+
+    chats = []
+    for project in projects:
+        # Messages from before the user joined (or created the project) never count as unread.
+        since = read_at.get(project.id) or joined_at.get(project.id) or project.created_at
+        unread = project.messages.filter(created_at__gt=since).exclude(sender=user).count()
+        last = project.messages.select_related('sender__profile').order_by('-created_at').first()
+
+        chats.append({
+            'project_id': project.id,
+            'title': project.title,
+            'member_count': len(project.project_members.all()) + 1,  # + the owner, who is not a ProjectMember row
+            'last_message': MessageSerializer(last, context={'request': request}).data if last else None,
+            'unread_count': unread,
+            'last_activity': last.created_at if last else project.created_at,
+        })
+
+    chats.sort(key=lambda chat: chat['last_activity'], reverse=True)
+    return chats
+
+
+class ChatListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(build_chat_summaries(request.user, request))
+
+
+class ChatUnreadCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        chats = build_chat_summaries(request.user, request)
+        return Response({'count': sum(chat['unread_count'] for chat in chats)})
+
+
+class ProjectChatView(APIView):
+    """Header and member panel for one chat: title plus everyone in it (owner first)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+        project = get_object_or_404(Project.objects.select_related('project_owner__profile'), id=id)
+        if not can_access_chat(request.user, project):
+            return Response({'message': 'You do not have access to this project chat.'}, status=status.HTTP_403_FORBIDDEN)
+
+        def person(user, role, joined_at):
+            return {
+                'id': user.id,
+                'name': get_display_name(user),
+                'avatar_url': get_avatar_url(getattr(user, 'profile', None), request),
+                'role': role,
+                'joined_at': joined_at,
+            }
+
+        members = [person(project.project_owner, 'owner', project.created_at)]
+        for member in project.project_members.select_related('user__profile').order_by('joined_at'):
+            members.append(person(member.user, 'member', member.joined_at))
+
+        return Response({'id': project.id, 'title': project.title, 'members': members})
+
+
 class ProjectMessagesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_project_for_member(self, request, id):
         project = get_object_or_404(Project, id=id)
-        is_owner = project.project_owner_id == request.user.id
-        is_member = ProjectMember.objects.filter(project=project, user=request.user).exists()
-        if not (is_owner or is_member):
+        if not can_access_chat(request.user, project):
             return None
         return project
 
@@ -518,16 +594,42 @@ class ProjectMessagesView(APIView):
         project = self.get_project_for_member(request, id)
         if project is None:
             return Response({'message': 'You do not have access to this project chat.'}, status=status.HTTP_403_FORBIDDEN)
-        messages = project.messages.select_related('sender').all()
-        serializer = MessageSerializer(messages, many=True)
-        return Response(serializer.data)
+
+        messages = project.messages.select_related('sender__profile')
+
+        # ?after=<message id> lets the chat poll for only what is new.
+        after = request.query_params.get('after')
+        if after is not None:
+            if not after.isdigit():
+                return Response({'message': 'after must be a message id.'}, status=status.HTTP_400_BAD_REQUEST)
+            messages = messages.filter(id__gt=int(after))
+            batch = list(messages.order_by('id'))
+        else:
+            batch = list(messages.order_by('-id')[:MESSAGE_PAGE_SIZE])[::-1]
+
+        return Response(MessageSerializer(batch, many=True, context={'request': request}).data)
 
     def post(self, request, id):
         project = self.get_project_for_member(request, id)
         if project is None:
             return Response({'message': 'You do not have access to this project chat.'}, status=status.HTTP_403_FORBIDDEN)
-        serializer = MessageSerializer(data=request.data)
+        serializer = MessageSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             message = serializer.save(project=project, sender=request.user)
-            return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
+            return Response(MessageSerializer(message, context={'request': request}).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProjectMessagesReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        project = get_object_or_404(Project, id=id)
+        if not can_access_chat(request.user, project):
+            return Response({'message': 'You do not have access to this project chat.'}, status=status.HTTP_403_FORBIDDEN)
+        ChatReadState.objects.update_or_create(
+            project=project,
+            user=request.user,
+            defaults={'last_read_at': timezone.now()},
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)

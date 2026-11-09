@@ -323,4 +323,5 @@ class MessageSerializer(serializers.ModelSerializer):
         return {
             'id': message.sender_id,
             'name': get_display_name(message.sender),
+            'avatar_url': get_avatar_url(getattr(message.sender, 'profile', None), self.context.get('request')),
         }

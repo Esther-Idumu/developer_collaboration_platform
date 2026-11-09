@@ -105,6 +105,11 @@
     font-weight: var(--font-semibold);
 }
 
+.top-nav a.active .badge {
+    background-color: var(--surface);
+    color: var(--indigo-accent);
+}
+
 .bottom-nav {
     margin-top: auto;
     padding-top: 12px;

@@ -1047,3 +1047,68 @@ class ProjectMessagesAPITests(APITestCase):
             {'content': ''}, format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class ProjectChatAPITests(APITestCase):
+
+    def setUp(self):
+        self.owner = User.objects.create_user(email="owner@test.com", password="password123")
+        self.member = User.objects.create_user(email="member@test.com", password="password123")
+        self.outsider = User.objects.create_user(email="outsider@test.com", password="password123")
+        self.project = Project.objects.create(title="Campus Connect", description="d", project_owner=self.owner)
+        ProjectMember.objects.create(project=self.project, user=self.member)
+        self.messages_url = reverse("project-messages", args=[self.project.id])
+
+    def test_outsider_cannot_read_or_post(self):
+        self.client.force_authenticate(self.outsider)
+        self.assertEqual(self.client.get(self.messages_url).status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.post(self.messages_url, {"content": "hi"}).status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.get(reverse("project-chat", args=[self.project.id])).status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_members_can_chat_and_poll_for_new_messages(self):
+        self.client.force_authenticate(self.member)
+        first = self.client.post(self.messages_url, {"content": "Hello team"})
+        self.assertEqual(first.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(first.data["sender"]["id"], self.member.id)
+
+        self.client.force_authenticate(self.owner)
+        self.client.post(self.messages_url, {"content": "Welcome"})
+
+        polled = self.client.get(self.messages_url, {"after": first.data["id"]})
+        self.assertEqual([m["content"] for m in polled.data], ["Welcome"])
+        self.assertEqual(len(self.client.get(self.messages_url).data), 2)
+
+    def test_blank_message_rejected(self):
+        self.client.force_authenticate(self.member)
+        self.assertEqual(self.client.post(self.messages_url, {"content": "   "}).status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_chat_members_lists_owner_first(self):
+        self.client.force_authenticate(self.member)
+        data = self.client.get(reverse("project-chat", args=[self.project.id])).data
+        self.assertEqual([m["role"] for m in data["members"]], ["owner", "member"])
+
+    def test_chat_list_unread_and_mark_read(self):
+        self.client.force_authenticate(self.owner)
+        self.client.post(self.messages_url, {"content": "Welcome"})
+        self.client.post(self.messages_url, {"content": "API docs are in the brief"})
+
+        self.client.force_authenticate(self.member)
+        chats = self.client.get(reverse("chats")).data
+        self.assertEqual(len(chats), 1)
+        self.assertEqual(chats[0]["member_count"], 2)
+        # Both messages came after the member joined only if they were sent later; force that.
+        ProjectMember.objects.filter(user=self.member).update(joined_at="2000-01-01T00:00:00Z")
+        chats = self.client.get(reverse("chats")).data
+        self.assertEqual(chats[0]["unread_count"], 2)
+        self.assertEqual(self.client.get(reverse("chats-unread")).data["count"], 2)
+
+        self.client.post(reverse("project-messages-read", args=[self.project.id]))
+        self.assertEqual(self.client.get(reverse("chats-unread")).data["count"], 0)
+
+        # Own messages are never unread for the sender.
+        self.client.post(self.messages_url, {"content": "Thanks"})
+        self.assertEqual(self.client.get(reverse("chats-unread")).data["count"], 0)
+
+    def test_outsider_sees_no_chats(self):
+        self.client.force_authenticate(self.outsider)
+        self.assertEqual(self.client.get(reverse("chats")).data, [])

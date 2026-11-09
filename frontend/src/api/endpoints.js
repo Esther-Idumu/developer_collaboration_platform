@@ -48,15 +48,65 @@ export function unsaveProject(projectId) {
     return apiFetch(`/projects/${projectId}/save`, { method: 'DELETE' });
 }
 
-export function getProjectMessages(projectId, signal) {
-    return apiFetch(`/projects/${projectId}/messages`, { signal });
+function toChatMessage(message) {
+    return {
+        id: message.id,
+        content: message.content,
+        createdAt: message.created_at,
+        sender: { ...message.sender, avatarUrl: message.sender.avatar_url },
+    };
 }
 
-export function sendProjectMessage(projectId, content) {
-    return apiFetch(`/projects/${projectId}/messages`, {
-        method: 'POST',
+export async function getChats(signal) {
+    const chats = await apiFetch("/projects/chats", { signal });
+
+    return chats.map((chat) => ({
+        projectId: chat.project_id,
+        title: chat.title,
+        memberCount: chat.member_count,
+        unreadCount: chat.unread_count,
+        lastActivity: chat.last_activity,
+        lastMessage: chat.last_message ? toChatMessage(chat.last_message) : null,
+    }));
+}
+
+export async function getUnreadChatCount(signal) {
+    const data = await apiFetch("/projects/chats/unread", { signal });
+    return data.count;
+}
+
+export async function getProjectChat(projectId, signal) {
+    const chat = await apiFetch(`/projects/${projectId}/chat`, { signal });
+
+    return {
+        id: chat.id,
+        title: chat.title,
+        members: chat.members.map((member) => ({
+            id: member.id,
+            name: member.name,
+            avatarUrl: member.avatar_url,
+            role: member.role,
+            joinedAt: member.joined_at,
+        })),
+    };
+}
+
+// Pass `after` (a message id) to fetch only messages newer than it.
+export async function getProjectMessages(projectId, { after, signal } = {}) {
+    const query = after ? `?after=${after}` : "";
+    const messages = await apiFetch(`/projects/${projectId}/messages${query}`, { signal });
+    return messages.map(toChatMessage);
+}
+
+export async function sendProjectMessage(projectId, content) {
+    return toChatMessage(await apiFetch(`/projects/${projectId}/messages`, {
+        method: "POST",
         body: { content },
-    });
+    }));
+}
+
+export function markChatRead(projectId) {
+    return apiFetch(`/projects/${projectId}/messages/read`, { method: "POST" });
 }
 
 export function getProfile(id, signal) {

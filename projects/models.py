@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from accounts.models import User
 
 class Project(models.Model):
@@ -92,7 +93,6 @@ class SavedProject(models.Model):
         ]
         ordering = ["-saved_at"]
 
-
 class Message(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="messages")
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="project_messages")
@@ -101,3 +101,16 @@ class Message(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+
+class ChatReadState(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="chat_read_states")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_read_states")
+    last_read_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "project"],
+                name="unique_chat_read_state"
+            )
+        ]
