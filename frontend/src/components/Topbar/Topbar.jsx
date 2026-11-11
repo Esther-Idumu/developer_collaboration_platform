@@ -109,10 +109,6 @@ function Topbar({ hasNotifications = false }) {
                                 Profile
                             </Link>
 
-                            <Link to="/settings" className="profile-menu-item" role="menuitem" onClick={() => setMenuOpen(false)}>
-                                Settings
-                            </Link>
-
                             <button type="button" className="profile-menu-item profile-menu-item-danger" role="menuitem" onClick={handleLogout}>
                                 Log out
                             </button>

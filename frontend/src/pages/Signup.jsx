@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_URL } from "../api/client";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css";
 
@@ -34,7 +35,7 @@ function Signup() {
 
         try {
             const response = await fetch(
-                "http://127.0.0.1:8000/api/accounts/register",
+                `${API_URL}/accounts/register`,
                 {
                     method: "POST",
                     headers: {

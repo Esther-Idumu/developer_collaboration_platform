@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./Bookmark.css";
 
 function Bookmark({ saved = false, onToggle }) {

@@ -27,14 +27,6 @@ export async function getSuggestedDevelopers(signal) {
     return developers.map(toDeveloper);
 }
 
-export async function getDevelopers({ search = '', skill = '', limit = 50, signal } = {}) {
-    const params = new URLSearchParams({ limit: String(limit) });
-    if (search.trim()) params.set('search', search.trim());
-    if (skill.trim()) params.set('skill', skill.trim());
-    const developers = await apiFetch(`/accounts/developers?${params.toString()}`, { signal });
-    return developers.map(toDeveloper);
-}
-
 export async function getSavedProjects(signal) {
     const saved = await apiFetch('/projects/saved', { signal });
     return saved.map((entry) => toProject(entry.project));
@@ -189,5 +181,40 @@ export function applyToRole(projectRoleId, message) {
     return apiFetch("/projects/applications", {
         method: "POST",
         body: { project_role: projectRoleId, message },
+    });
+}
+
+
+export function getRoles(signal) {
+    return apiFetch("/projects/roles", { signal });
+}
+
+export function getSkills(signal) {
+    return apiFetch("/projects/skills", { signal });
+}
+
+export async function createProject({ title, description, githubUrl, websiteUrl }) {
+    const result = await apiFetch("/projects/", {
+        method: "POST",
+        body: {
+            title,
+            description,
+            github_url: githubUrl,
+            website_url: websiteUrl,
+        },
+    });
+
+    return result.project;
+}
+
+export function addProjectRole(projectId, { roleId, noOfDevelopers, skillIds }) {
+    return apiFetch("/projects/project-roles", {
+        method: "POST",
+        body: {
+            project: projectId,
+            role: roleId,
+            no_of_developers: noOfDevelopers,
+            skills: skillIds,
+        },
     });
 }

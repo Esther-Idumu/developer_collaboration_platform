@@ -34,7 +34,7 @@ function MyProjectCard({ project, onUnsave, isUnsaving = false }) {
 
             <div className="my-project-card-footer">
                 <div className="my-project-card-team">
-                    <AvatarStack people={members} max={2} size={28} />
+                    <AvatarStack people={members} max={2} size={22} />
                     <span className="my-project-card-members">
                         {members.length} / {capacity} members
                     </span>
@@ -44,8 +44,8 @@ function MyProjectCard({ project, onUnsave, isUnsaving = false }) {
                     View Project
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
+                        width="14"
+                        height="14"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"

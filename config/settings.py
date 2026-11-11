@@ -1,5 +1,5 @@
 from pathlib import Path
-from decouple import config
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,9 +12,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Defaults to False so a forgotten variable can never turn debug on in production.
+# Set DEBUG=True in your local .env.
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 
 # Application definition
@@ -69,11 +71,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
+        # Prefixed with DB_ because a bare USER is also an OS variable on Linux/macOS,
+        # and python-decouple reads the real environment before the .env file.
         'NAME': config('NAME'),
         'USER': config('USER'),
         'PASSWORD': config('PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'HOST': config('HOST', default='localhost'),
+        'PORT': config('PORT', default='5432'),
     }
 }
 
@@ -113,6 +117,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Uploaded files (profile photos)
 MEDIA_URL = '/media/'
@@ -121,12 +126,39 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+#
+# With no EMAIL_HOST set, emails are printed to the terminal (local development).
+# In production set EMAIL_HOST, EMAIL_HOST_USER and EMAIL_HOST_PASSWORD in the environment.
+# (Variable names avoid EMAIL_HOST etc: Django refuses those when MAILERS is defined.)
+_smtp_host = config('EMAIL_HOST', default='')
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+if _smtp_host:
+    _use_ssl = config('EMAIL_USE_SSL', default=False, cast=bool)
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+            'OPTIONS': {
+                'host': _smtp_host,
+                'port': config('EMAIL_PORT', default=465 if _use_ssl else 587, cast=int),
+                'username': config('EMAIL_HOST_USER', default=''),
+                'password': config('EMAIL_HOST_PASSWORD', default=''),
+                'use_ssl': _use_ssl,
+                'use_tls': not _use_ssl,
+                'timeout': 10,
+            },
+        },
+    }
+else:
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        },
+    }
+
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='DevLink <noreply@devlink.com>')
+
+# Where the frontend lives. Used to build the link inside the verification email.
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173').rstrip('/')
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -136,10 +168,19 @@ REST_FRAMEWORK = {
     ),
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5174",
-]
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:5173,http://localhost:5174',
+    cast=Csv(),
+)
 
-DEFAULT_FROM_EMAIL = "DevLink <noreply@devlink.com>"
-
+# How long a verification link stays valid (Django reuses the password reset timeout for it).
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
+    # Set to True when the app sits behind a proxy that terminates HTTPS (Render, Railway, Nginx...).
+    if config('BEHIND_HTTPS_PROXY', default=False, cast=bool):
+        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

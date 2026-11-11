@@ -1,12 +1,12 @@
 .my-projects-page {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 14px;
 }
 
 .my-projects-toolbar {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px 16px;
@@ -14,18 +14,54 @@
 
 .my-projects-toolbar-actions {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
 }
 
 .my-projects-search {
-    width: 360px;
+    width: 280px;
     max-width: 100%;
 }
 
 .my-projects-filters {
     position: relative;
+    display: flex;
+}
+
+/* Search, Filters and New project stretch to the height of the All / Owned / Joined / Saved tabs */
+.my-projects-search .search-input {
+    box-sizing: border-box;
+    height: 100%;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-radius: 6px;
+}
+
+.my-projects-toolbar-actions > .button,
+.my-projects-filters > .button {
+    box-sizing: border-box;
+    padding: 0 12px;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+/* Done inside the filters panel keeps a normal, larger button size */
+.my-projects-filters-done {
+    padding: 10px 22px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+/* Glow on the Filters button while its panel is open (or when focused with the keyboard) */
+.my-projects-filters .button:focus {
+    outline: none;
+}
+
+.my-projects-filters .button[aria-expanded="true"],
+.my-projects-filters .button:focus-visible {
+    border-color: var(--indigo-accent);
+    box-shadow: 0 0 0 1px var(--indigo-accent), 0 0 0 4px rgba(79, 70, 229, 0.25);
 }
 
 .my-projects-filters-panel {
@@ -35,35 +71,72 @@
     z-index: 20;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    min-width: 180px;
-    padding: 12px;
+    width: 300px;
+    padding: 20px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: 8px;
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 }
 
 .my-projects-filters-title {
-    margin-bottom: 4px;
+    margin-bottom: 8px;
     font-size: 12px;
     font-weight: var(--font-semibold);
-    color: var(--text-secondary);
+    color: var(--text-secondary-light);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
 }
 
 .my-projects-filters-option {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 4px;
+    gap: 10px;
+    padding: 7px 0;
     font-size: 14px;
+    color: var(--text-secondary-dark);
     cursor: pointer;
 }
 
+.my-projects-filters-option input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--indigo-accent);
+    cursor: pointer;
+}
+
+.my-projects-filters-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.my-projects-filters-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.my-projects-filters-clear {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: var(--font-medium);
+    color: var(--indigo-accent);
+    cursor: pointer;
+}
+
+.my-projects-filters-clear:hover {
+    text-decoration: underline;
+}
+
 .my-projects-panel {
-    padding: 24px;
+    padding: 16px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -72,7 +145,7 @@
 .my-projects-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
+    gap: 14px;
 }
 
 .my-projects-message {

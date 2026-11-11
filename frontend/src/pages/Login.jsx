@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_URL } from "../api/client";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Login.css";
@@ -23,7 +24,7 @@ function Login() {
 
         try {
             const response = await fetch(
-                "http://127.0.0.1:8000/api/accounts/login",
+                `${API_URL}/accounts/login`,
                 {
                     method: "POST",
                     headers: {
@@ -59,7 +60,7 @@ function Login() {
             const refreshToken = data.refresh;
 
             const userResponse = await fetch(
-                "http://127.0.0.1:8000/api/accounts/me",
+                `${API_URL}/accounts/me`,
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,

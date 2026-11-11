@@ -1,4 +1,4 @@
-import Avatar, { getInitials } from "../Avatar/Avatar";
+import Avatar from "../Avatar/Avatar";
 import "./AvatarStack.css";
 
 function AvatarStack({ people = [], max = 2, size = 32}) {

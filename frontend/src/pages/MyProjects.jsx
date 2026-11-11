@@ -15,11 +15,22 @@ const TABS = [
 ];
 
 const STATUS_OPTIONS = [
-    { id: "all", label: "Any status" },
-    { id: "open", label: "Open" },
-    { id: "in_progress", label: "In progress" },
-    { id: "complete", label: "Complete" },
+    { id: "open", label: "Open", color: "#10b981" },
+    { id: "in_progress", label: "In progress", color: "#3b82f6" },
+    { id: "complete", label: "Complete", color: "#8b5cf6" },
+    { id: "closed", label: "Closed", color: "#f59e0b" },
+    { id: "archived", label: "Archived", color: "#94a3b8" },
+    { id: "cancelled", label: "Cancelled", color: "#ef4444" },
 ];
+
+// "archived" is a flag on the project rather than a status value.
+function matchesStatus(project, statusId) {
+    if (statusId === "archived") {
+        return Boolean(project.is_archived);
+    }
+
+    return project.status === statusId;
+}
 
 const EMPTY_MESSAGES = {
     all: "You don't have any projects yet.",
@@ -45,7 +56,7 @@ function MyProjects() {
 
     const [activeTab, setActiveTab] = useState("all");
     const [search, setSearch] = useState("");
-    const [status, setStatus] = useState("all");
+    const [selectedStatuses, setSelectedStatuses] = useState(() => new Set());
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [unsavedIds, setUnsavedIds] = useState(() => new Set());
     const [pendingIds, setPendingIds] = useState(() => new Set());
@@ -110,12 +121,26 @@ function MyProjects() {
             if (activeTab === "owned" && project.role !== "owner") return false;
             if (activeTab === "joined" && project.role !== "member") return false;
             if (activeTab === "saved" && !savedIds.has(project.id)) return false;
-            if (status !== "all" && project.status !== status) return false;
+            if (selectedStatuses.size > 0 && ![...selectedStatuses].some((id) => matchesStatus(project, id))) return false;
             if (query && !matchesSearch(project, query)) return false;
 
             return true;
         });
-    }, [projects, savedIds, activeTab, status, search]);
+    }, [projects, savedIds, activeTab, selectedStatuses, search]);
+
+    function toggleStatus(statusId) {
+        setSelectedStatuses((previous) => {
+            const next = new Set(previous);
+
+            if (next.has(statusId)) {
+                next.delete(statusId);
+            } else {
+                next.add(statusId);
+            }
+
+            return next;
+        });
+    }
 
     async function handleUnsave(projectId) {
         if (pendingIds.has(projectId)) {
@@ -144,7 +169,7 @@ function MyProjects() {
         }
     }
 
-    const isFiltering = search.trim() !== "" || status !== "all";
+    const isFiltering = search.trim() !== "" || selectedStatuses.size > 0;
 
     return (
         <div className="my-projects-page">
@@ -174,7 +199,7 @@ function MyProjects() {
                                 </svg>
                             }
                         >
-                            Filters{status !== "all" ? " (1)" : ""}
+                            Filters{selectedStatuses.size > 0 ? ` (${selectedStatuses.size})` : ""}
                         </Button>
 
                         {filtersOpen && (
@@ -184,14 +209,31 @@ function MyProjects() {
                                 {STATUS_OPTIONS.map((option) => (
                                     <label key={option.id} className="my-projects-filters-option">
                                         <input
-                                            type="radio"
-                                            name="status"
-                                            checked={status === option.id}
-                                            onChange={() => setStatus(option.id)}
+                                            type="checkbox"
+                                            checked={selectedStatuses.has(option.id)}
+                                            onChange={() => toggleStatus(option.id)}
+                                        />
+                                        <span
+                                            className="my-projects-filters-dot"
+                                            style={{ background: option.color }}
+                                            aria-hidden="true"
                                         />
                                         {option.label}
                                     </label>
                                 ))}
+
+                                <div className="my-projects-filters-footer">
+                                    <button
+                                        type="button"
+                                        className="my-projects-filters-clear"
+                                        onClick={() => setSelectedStatuses(new Set())}
+                                    >
+                                        Clear all
+                                    </button>
+                                    <Button variant="primary" className="my-projects-filters-done" onClick={() => setFiltersOpen(false)}>
+                                        Done
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </div>

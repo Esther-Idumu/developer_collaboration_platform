@@ -1,0 +1,139 @@
+.create-project {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 720px;
+}
+
+.create-project .page-header {
+    margin-bottom: 0;
+}
+
+.create-project-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.create-project-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.create-project-roles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.create-project-roles-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.create-project-roles-title {
+    font-size: 15px;
+    font-weight: var(--font-semibold);
+    color: var(--text);
+}
+
+.create-project-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.create-project-role {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.create-project-role-top {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.create-project-role-select {
+    flex: 1;
+}
+
+.create-project-role-count {
+    width: 110px;
+}
+
+.create-project-role-remove,
+.create-project-role-saved {
+    padding: 10px 4px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: var(--font-medium);
+}
+
+.create-project-role-remove {
+    border: 0;
+    background: none;
+    color: #B91C1C;
+    cursor: pointer;
+}
+
+.create-project-role-saved {
+    color: var(--status-green);
+}
+
+.create-project-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.create-project-skill {
+    padding: 4px 10px;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-secondary-dark);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xsm);
+    cursor: pointer;
+}
+
+.create-project-skill[aria-pressed="true"] {
+    color: var(--indigo-accent);
+    background: var(--indigo-light);
+    border-color: var(--indigo-accent);
+}
+
+.create-project-skill:disabled {
+    cursor: default;
+    opacity: 0.7;
+}
+
+.create-project-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .create-project-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .create-project-role-top {
+        flex-wrap: wrap;
+    }
+}

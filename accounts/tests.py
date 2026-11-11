@@ -53,3 +53,70 @@ class DeveloperDiscoveryAPITests(APITestCase):
         response = self.client.get(reverse('developers'), {'search': 'Mobile Developer'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
+
+
+from unittest import mock
+
+from django.core import mail
+from django.test import override_settings
+
+
+@override_settings(FRONTEND_URL='https://devlink.example.com')
+class EmailVerificationTests(APITestCase):
+    def register(self, email='new@test.com'):
+        return self.client.post(
+            reverse('register'), {'email': email, 'password': 'a-Strong-pass-731'}, format='json'
+        )
+
+    def verification_path(self):
+        body = mail.outbox[-1].body
+        start = body.index('https://devlink.example.com') + len('https://devlink.example.com')
+        return body[start:].split()[0]
+
+    def test_register_sends_email_with_production_link(self):
+        response = self.register()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['new@test.com'])
+        self.assertIn('https://devlink.example.com/verify-email/', mail.outbox[0].body)
+        self.assertNotIn('localhost', mail.outbox[0].body)
+
+    def test_link_verifies_user_and_allows_login(self):
+        self.register()
+        path = self.verification_path()  # /verify-email/<uid>/<token>/
+        _, uid, token = path.strip('/').split('/')
+
+        login = {'email': 'new@test.com', 'password': 'a-Strong-pass-731'}
+        self.assertEqual(self.client.post(reverse('login'), login, format='json').status_code, 400)
+
+        response = self.client.get(reverse('verify-email', args=[uid, token]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(User.objects.get(email='new@test.com').is_email_verified)
+        self.assertEqual(self.client.post(reverse('login'), login, format='json').status_code, 200)
+
+    def test_bad_token_is_rejected(self):
+        self.register()
+        _, uid, _ = self.verification_path().strip('/').split('/')
+        response = self.client.get(reverse('verify-email', args=[uid, 'not-a-real-token']))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(User.objects.get(email='new@test.com').is_email_verified)
+
+    def test_signup_still_succeeds_when_mail_server_fails(self):
+        with mock.patch('accounts.services.email_verification.send_mail', side_effect=OSError('smtp down')):
+            response = self.register('offline@test.com')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(email='offline@test.com').exists())
+
+    def test_resend_sends_a_new_email_to_unverified_user(self):
+        self.register()
+        response = self.client.post(reverse('resend-verification'), {'email': 'new@test.com'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(mail.outbox), 2)
+
+    def test_resend_gives_same_answer_for_unknown_and_verified_emails(self):
+        User.objects.create_user(email='done@test.com', password='x', is_email_verified=True)
+        known = self.client.post(reverse('resend-verification'), {'email': 'done@test.com'}, format='json')
+        unknown = self.client.post(reverse('resend-verification'), {'email': 'nobody@test.com'}, format='json')
+        self.assertEqual(known.status_code, unknown.status_code)
+        self.assertEqual(known.data, unknown.data)
+        self.assertEqual(len(mail.outbox), 0)

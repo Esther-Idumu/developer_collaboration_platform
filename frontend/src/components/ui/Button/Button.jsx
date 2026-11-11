@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import "./Button.css";
 
-function Button({ variant = "secondary", size = "md", icon, to, children, ...rest }) {
-    const className = `button button-${variant} ${size === "sm" ? "button-sm" : ""}`.trim();
+function Button({ variant = "secondary", size = "md", icon, to, className: extraClassName = "", children, ...rest }) {
+    const className = `button button-${variant} ${size === "sm" ? "button-sm" : ""} ${extraClassName}`.trim().replace(/\s+/g, " ");
 
     const content = (
         <>

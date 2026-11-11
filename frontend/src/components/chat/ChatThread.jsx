@@ -273,7 +273,7 @@ function ChatThread({ chat, currentUser, onActivity }) {
                     </svg>
                 </Link>
 
-                <ProjectTile projectId={chat.id} title={chat.title} size={60} />
+                <ProjectTile projectId={chat.id} title={chat.title} size={40} />
 
                 <div className="chat-thread-heading">
                     <h1>{chat.title}</h1>
@@ -326,7 +326,7 @@ function ChatThread({ chat, currentUser, onActivity }) {
                                 >
                                     {!own && (
                                         <span className="chat-message-avatar">
-                                            {entry.isLastInGroup && <Avatar name={sender.name} avatarUrl={sender.avatarUrl} size={48} />}
+                                            {entry.isLastInGroup && <Avatar name={sender.name} avatarUrl={sender.avatarUrl} size={32} />}
                                         </span>
                                     )}
 

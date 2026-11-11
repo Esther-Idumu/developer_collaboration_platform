@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_URL } from "../api/client";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./CheckEmail.css";
 
@@ -26,7 +27,7 @@ function CheckEmail() {
         try {
 
             const response = await fetch(
-                "http://127.0.0.1:8000/api/accounts/resend-verification",
+                `${API_URL}/accounts/resend-verification`,
                 {
                     method: "POST",
                     headers: {

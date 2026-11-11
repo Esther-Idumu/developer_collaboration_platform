@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_URL } from "../api/client";
 import { useParams, useNavigate } from "react-router-dom";
 import "./VerifyEmail.css"
 
@@ -16,7 +17,7 @@ function VerifyEmail() {
 
             try {
                 const response = await fetch(
-                    `http://127.0.0.1:8000/api/accounts/verify-email/${uid}/${token}`
+                    `${API_URL}/accounts/verify-email/${uid}/${token}`
                 );
 
                 const data = await response.json();
@@ -26,7 +27,6 @@ function VerifyEmail() {
                     setMessage(
                         data.error || "Unable to verify your email."
                     );
-                    console.log("Verification response:", data);
                     return;
                 }
 

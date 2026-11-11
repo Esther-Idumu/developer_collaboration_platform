@@ -22,7 +22,7 @@ function MembersPanel({ members, currentUserId, open, onToggle }) {
                 <ul className="members-rail-list">
                     {members.map((member) => (
                         <li key={member.id}>
-                            <Avatar name={member.name} avatarUrl={member.avatarUrl} size={40} />
+                            <Avatar name={member.name} avatarUrl={member.avatarUrl} size={28} />
                         </li>
                     ))}
                 </ul>
@@ -44,7 +44,7 @@ function MembersPanel({ members, currentUserId, open, onToggle }) {
             <ul className="members-list">
                 {members.map((member) => (
                     <li key={member.id} className="members-row">
-                        <Avatar name={member.name} avatarUrl={member.avatarUrl} size={48} />
+                        <Avatar name={member.name} avatarUrl={member.avatarUrl} size={32} />
 
                         <span className="members-row-text">
                             <span className="members-row-name">{member.id === currentUserId ? "You" : member.name}</span>

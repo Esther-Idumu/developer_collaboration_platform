@@ -123,14 +123,10 @@ class ResendVerificationView(APIView):
                 status=status.HTTP_200_OK
             )
 
-        if user.is_email_verified:
-            return Response(
-                {
-                    "message": "This email is already verified."
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        send_verification_email(user)
+        # Same response whether or not the email is already verified, so this
+        # endpoint can't be used to find out which emails have accounts.
+        if not user.is_email_verified:
+            send_verification_email(user)
 
         return Response(
             {

@@ -14,7 +14,7 @@ function getProjectInitials(title = "") {
     return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-function ProjectTile({ projectId, title, size = 44 }) {
+function ProjectTile({ projectId, title, size = 40 }) {
     const color = TILE_COLORS[projectId % TILE_COLORS.length];
 
     return (
