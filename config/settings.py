@@ -34,8 +34,10 @@ INSTALLED_APPS = [
     'projects'
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -44,6 +46,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -71,8 +74,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        # Prefixed with DB_ because a bare USER is also an OS variable on Linux/macOS,
-        # and python-decouple reads the real environment before the .env file.
         'NAME': config('NAME'),
         'USER': config('USER'),
         'PASSWORD': config('PASSWORD'),
@@ -101,9 +102,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -113,23 +111,24 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
+
 
 # Uploaded files (profile photos)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-#
-# With no EMAIL_HOST set, emails are printed to the terminal (local development).
-# In production set EMAIL_HOST, EMAIL_HOST_USER and EMAIL_HOST_PASSWORD in the environment.
-# (Variable names avoid EMAIL_HOST etc: Django refuses those when MAILERS is defined.)
 _smtp_host = config('EMAIL_HOST', default='')
 
 if _smtp_host:
