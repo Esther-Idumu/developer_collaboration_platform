@@ -17,9 +17,11 @@ def create_verification_url(user):
 
 def send_verification_email(user):
     """Send the verification link. Returns True if the email was handed to the mail server."""
-    # In production the console backend only prints the email (and its link) into the server
-    # log. Treat that as "not sent" instead of pretending it worked.
-    if not settings.DEBUG and settings.MAILERS["default"]["BACKEND"].endswith("console.EmailBackend"):
+
+    if (
+        not settings.DEBUG
+        and "console.EmailBackend" in settings.EMAIL_BACKEND
+    ):
         logger.error(
             "Verification email for user %s was NOT sent: EMAIL_HOST is not set, "
             "so no real email backend is configured.",
@@ -31,7 +33,7 @@ def send_verification_email(user):
     hours = settings.PASSWORD_RESET_TIMEOUT // 3600
 
     try:
-        send_mail(
+        sent_count = send_mail(
             subject="Verify your DevLink email",
             message=(
                 "Hi,\n\n"
@@ -45,9 +47,12 @@ def send_verification_email(user):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
         )
-    except Exception:
-        # A mail server problem must never turn signup into a 500 or reveal server details.
-        logger.exception("Could not send verification email to user %s", user.pk)
-        return False
 
-    return True
+        return sent_count > 0
+
+    except Exception:
+        logger.exception(
+            "Could not send verification email to user %s",
+            user.pk,
+        )
+        return False

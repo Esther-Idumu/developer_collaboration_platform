@@ -121,34 +121,32 @@ STORAGES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
 _smtp_host = config('EMAIL_HOST', default='')
+_use_ssl = config('EMAIL_USE_SSL', default=False, cast=bool)
 
 if _smtp_host:
-    _use_ssl = config('EMAIL_USE_SSL', default=False, cast=bool)
-    MAILERS = {
-        'default': {
-            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
-            'OPTIONS': {
-                'host': _smtp_host,
-                'port': config('EMAIL_PORT', default=465 if _use_ssl else 587, cast=int),
-                'username': config('EMAIL_HOST_USER', default=''),
-                'password': config('EMAIL_HOST_PASSWORD', default=''),
-                'use_ssl': _use_ssl,
-                'use_tls': not _use_ssl,
-                'timeout': 10,
-            },
-        },
-    }
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = _smtp_host
+    EMAIL_PORT = config(
+        'EMAIL_PORT',
+        default=465 if _use_ssl else 587,
+        cast=int
+    )
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+    EMAIL_USE_SSL = _use_ssl
+    EMAIL_USE_TLS = not _use_ssl
+    EMAIL_TIMEOUT = 10
+
 else:
-    MAILERS = {
-        'default': {
-            'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-        },
-    }
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='DevLink <noreply@devlink.com>')
+DEFAULT_FROM_EMAIL = config(
+    'DEFAULT_FROM_EMAIL',
+    default=EMAIL_HOST_USER if _smtp_host else 'DevLink <devlinkapp26@gmail.com>'
+)
 
-# Where the frontend lives. Used to build the link inside the verification email.
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173').rstrip('/')
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -186,10 +184,9 @@ if not DEBUG:
             RuntimeWarning,
         )
 
-    if not config('DEFAULT_FROM_EMAIL', default=''):
+    if not config('DEFAULT_FROM_EMAIL', default='') and not _smtp_host:
         warnings.warn(
-            "DEFAULT_FROM_EMAIL is not set: emails are sent from DevLink <noreply@devlink.com>, "
-            "and most email providers reject senders they have not verified.",
+            "DEFAULT_FROM_EMAIL is not explicitly configured.",
             RuntimeWarning,
         )
 
