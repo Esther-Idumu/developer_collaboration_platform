@@ -1,19 +1,13 @@
+import dj_database_url
 from pathlib import Path
 from decouple import config, Csv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# Defaults to False so a forgotten variable can never turn debug on in production.
-# Set DEBUG=True in your local .env.
+
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
@@ -71,15 +65,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('NAME'),
-        'USER': config('USER'),
-        'PASSWORD': config('PASSWORD'),
-        'HOST': config('HOST', default='localhost'),
-        'PORT': config('PORT', default='5432'),
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=not DEBUG,
+    )
 }
 
 
