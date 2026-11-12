@@ -43,9 +43,10 @@ class LoginSerializer(serializers.Serializer):
             )
 
         if not user.is_email_verified:
-            raise serializers.ValidationError(
-                "Please verify your email before logging in."
-            )
+            raise serializers.ValidationError({
+                "code": "email_not_verified",
+                "message": "Please verify your email before logging in."
+            })
 
         attrs['user'] = user
 

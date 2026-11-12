@@ -557,6 +557,62 @@
 }
 
 
+
+.verification-notice {
+    padding: 16px;
+    margin-top: 4px;
+    border: 1px solid #c7d2fe;
+    border-radius: 10px;
+    background: #eef2ff;
+}
+
+.verification-notice-header {
+    color: #3730a3;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.verification-notice > p {
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0 0 12px;
+}
+
+.resend-verification-button {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid #4f46e5;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.resend-verification-button:hover:not(:disabled) {
+    background: #e0e7ff;
+}
+
+.resend-verification-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.verification-success {
+    color: #166534 !important;
+    font-weight: 500;
+}
+
+.verification-error {
+    color: #b91c1c !important;
+    font-weight: 500;
+}
+
+
+
 /* =========================
    RESPONSIVE
    ========================= */

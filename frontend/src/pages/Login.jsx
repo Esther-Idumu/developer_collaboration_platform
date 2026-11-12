@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { API_URL } from "../api/client";
 import { useNavigate } from "react-router-dom";
@@ -5,7 +6,6 @@ import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
 function Login() {
-
     const navigate = useNavigate();
     const { login } = useAuth();
 
@@ -16,10 +16,18 @@ function Login() {
     const [error, setError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [emailVerificationRequired, setEmailVerificationRequired] = useState(false);
+    const [isResending, setIsResending] = useState(false);
+    const [resendMessage, setResendMessage] = useState("");
+    const [resendError, setResendError] = useState("");
+
     async function handleSubmit(event) {
         event.preventDefault();
 
         setError("");
+        setResendMessage("");
+        setResendError("");
+        setEmailVerificationRequired(false);
         setIsSubmitting(true);
 
         try {
@@ -31,8 +39,8 @@ function Login() {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        email: email,
-                        password: password,
+                        email,
+                        password,
                     }),
                 }
             );
@@ -40,8 +48,17 @@ function Login() {
             const data = await response.json();
 
             if (!response.ok) {
+                // Handle unverified email separately.
+                const errorCode = Array.isArray(data.code)
+                    ? data.code[0]
+                    : data.code;
 
-                if (data.non_field_errors) {
+                if (errorCode === "email_not_verified") {
+                    setEmailVerificationRequired(true);
+                    setError(
+                        "Your email address has not been verified yet."
+                    );
+                } else if (data.non_field_errors) {
                     setError(data.non_field_errors[0]);
                 } else if (data.detail) {
                     setError(data.detail);
@@ -50,7 +67,10 @@ function Login() {
                 } else if (data.password) {
                     setError(data.password[0]);
                 } else {
-                    setError("Invalid email or password.");
+                    setError(
+                        data.message?.[0] ||
+                        "Invalid email or password."
+                    );
                 }
 
                 return;
@@ -74,16 +94,11 @@ function Login() {
 
             const userData = await userResponse.json();
 
-            login(
-                accessToken,
-                refreshToken,
-                userData
-            );
+            login(accessToken, refreshToken, userData);
 
             navigate("/home");
 
         } catch (error) {
-
             console.error("Login error:", error);
 
             setError(
@@ -91,9 +106,59 @@ function Login() {
             );
 
         } finally {
-
             setIsSubmitting(false);
+        }
+    }
 
+    async function handleResendVerification() {
+        if (!email.trim()) {
+            setResendError("Please enter your email address.");
+            return;
+        }
+
+        setIsResending(true);
+        setResendMessage("");
+        setResendError("");
+
+        try {
+            const response = await fetch(
+                `${API_URL}/accounts/resend-verification`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email: email.trim(),
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.email?.[0] ||
+                    data.detail ||
+                    "Unable to process your request. Please try again."
+                );
+            }
+
+            setResendMessage(
+                data.message ||
+                "If an unverified account exists with this email, a verification link will be sent."
+            );
+
+        } catch (error) {
+            console.error("Resend verification error:", error);
+
+            setResendError(
+                error.message ||
+                "Unable to resend verification email. Please try again."
+            );
+
+        } finally {
+            setIsResending(false);
         }
     }
 
@@ -110,7 +175,6 @@ function Login() {
                     </a>
 
                     <div className="login-heading">
-
                         <p className="eyebrow">
                             WELCOME BACK
                         </p>
@@ -118,7 +182,6 @@ function Login() {
                         <h1>
                             Log in to DevLink.
                         </h1>
-
                     </div>
 
                     <form
@@ -127,7 +190,6 @@ function Login() {
                     >
 
                         <div className="form-group">
-
                             <label htmlFor="email">
                                 Email
                             </label>
@@ -140,17 +202,17 @@ function Login() {
                                 onChange={(event) => {
                                     setEmail(event.target.value);
                                     setError("");
+                                    setEmailVerificationRequired(false);
+                                    setResendMessage("");
+                                    setResendError("");
                                 }}
                                 required
                             />
-
                         </div>
-
 
                         <div className="form-group">
 
                             <div className="password-label">
-
                                 <label htmlFor="password">
                                     Password
                                 </label>
@@ -158,23 +220,21 @@ function Login() {
                                 <a href="/forgot-password">
                                     Forgot password?
                                 </a>
-
                             </div>
 
                             <div className="password-input-wrapper">
 
                                 <input
-                                    type={
-                                        showPassword
-                                            ? "text"
-                                            : "password"
-                                    }
+                                    type={showPassword ? "text" : "password"}
                                     id="password"
                                     placeholder="Enter your password"
                                     value={password}
                                     onChange={(event) => {
                                         setPassword(event.target.value);
                                         setError("");
+                                        setEmailVerificationRequired(false);
+                                        setResendMessage("");
+                                        setResendError("");
                                     }}
                                     required
                                 />
@@ -208,16 +268,61 @@ function Login() {
                                 </button>
 
                             </div>
-
                         </div>
 
-
                         {error && (
-                            <p className="form-error">
+                            <p className="form-error" role="alert">
                                 {error}
                             </p>
                         )}
 
+                        {/* Email verification recovery */}
+                        {emailVerificationRequired && (
+                            <div className="verification-notice">
+
+                                <div className="verification-notice-header">
+                                    <strong>
+                                        Email verification required
+                                    </strong>
+                                </div>
+
+                                <p>
+                                    You haven't verified your email address.
+                                    Request a new verification link to activate
+                                    your account.
+                                </p>
+
+                                {resendMessage && (
+                                    <p
+                                        className="verification-success"
+                                        role="status"
+                                    >
+                                        {resendMessage}
+                                    </p>
+                                )}
+
+                                {resendError && (
+                                    <p
+                                        className="verification-error"
+                                        role="alert"
+                                    >
+                                        {resendError}
+                                    </p>
+                                )}
+
+                                <button
+                                    type="button"
+                                    className="resend-verification-button"
+                                    onClick={handleResendVerification}
+                                    disabled={isResending || !email.trim()}
+                                >
+                                    {isResending
+                                        ? "Sending..."
+                                        : "Resend verification email"}
+                                </button>
+
+                            </div>
+                        )}
 
                         <button
                             type="submit"
@@ -231,7 +336,6 @@ function Login() {
 
                     </form>
 
-
                     <p className="signup-prompt">
                         Don't have an account?
                         <a href="/signup">
@@ -240,9 +344,7 @@ function Login() {
                     </p>
 
                 </div>
-
             </section>
-
 
             {/* Right side - DevLink visual */}
             <section className="login-visual">
@@ -255,7 +357,6 @@ function Login() {
                             {" "}start with great people.
                         </span>
                     </h2>
-
 
                     <div className="login-project-preview">
 
@@ -294,9 +395,7 @@ function Login() {
                             </span>
 
                         </div>
-
                     </div>
-
 
                     <div className="visual-card developer-mini-card">
 
@@ -319,7 +418,6 @@ function Login() {
                     </div>
 
                 </div>
-
             </section>
 
         </main>
