@@ -169,6 +169,30 @@ CORS_ALLOWED_ORIGINS = config(
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24
 
 if not DEBUG:
+    # Loud reminders for settings that fail silently otherwise (they show up in the server logs).
+    import warnings
+
+    if not _smtp_host:
+        warnings.warn(
+            "EMAIL_HOST is not set: verification emails are only printed to the server log and "
+            "never delivered. Set EMAIL_HOST, EMAIL_HOST_USER and EMAIL_HOST_PASSWORD.",
+            RuntimeWarning,
+        )
+
+    if FRONTEND_URL.startswith('http://localhost'):
+        warnings.warn(
+            "FRONTEND_URL is still the localhost default: links in verification emails will point "
+            "to localhost. Set FRONTEND_URL to your site's address.",
+            RuntimeWarning,
+        )
+
+    if not config('DEFAULT_FROM_EMAIL', default=''):
+        warnings.warn(
+            "DEFAULT_FROM_EMAIL is not set: emails are sent from DevLink <noreply@devlink.com>, "
+            "and most email providers reject senders they have not verified.",
+            RuntimeWarning,
+        )
+
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())

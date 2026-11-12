@@ -9,6 +9,7 @@ function CheckEmail() {
     const navigate = useNavigate();
 
     const email = location.state?.email;
+    const emailSent = location.state?.emailSent !== false;
 
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -104,7 +105,9 @@ function CheckEmail() {
                 <h1>Check your email</h1>
 
                 <p className="check-email-message">
-                    We've sent a verification link to:
+                    {emailSent
+                        ? "We've sent a verification link to:"
+                        : "We couldn't send a verification link to:"}
                 </p>
 
                 {email && (
@@ -113,10 +116,20 @@ function CheckEmail() {
                     </p>
                 )}
 
-                <p className="check-email-help">
-                    Click the link in the email to verify your
-                    account and continue to DevLink.
-                </p>
+                {emailSent && (
+                    <p className="check-email-help">
+                        Click the link in the email to verify your
+                        account and continue to DevLink.
+                    </p>
+                )}
+
+                {!emailSent && !message && (
+                    <p className="check-email-error">
+                        Your account was created, but the verification email
+                        could not be sent right now. Please try again with the
+                        button below.
+                    </p>
+                )}
 
                 {message && (
                     <p className="check-email-success">

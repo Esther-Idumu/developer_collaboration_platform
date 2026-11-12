@@ -53,7 +53,9 @@ function Signup() {
             if (response.ok) {
                 navigate("/check-email", {
                     state: {
-                        email:email
+                        email: email,
+                        // false when the server could not send the verification email
+                        emailSent: data.email_sent !== false
                     }
                 });
                 return;
