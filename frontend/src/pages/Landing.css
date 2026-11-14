@@ -1,10 +1,12 @@
 /* HERO */
 
 .hero {
-    min-height: calc(100vh - 60px);
+    min-height: 100vh;
+    min-height: 100svh;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    padding: 80px 6%;
+    padding: clamp(24px, 6vh, 80px) 6%;
     overflow: hidden;
 }
 
@@ -12,11 +14,10 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
-    gap: 80px;
+    gap: clamp(32px, 6vw, 80px);
 }
 
 .hero-text {
@@ -31,9 +32,9 @@
 }
 
 .hero h1 {
-    margin: 18px 0 24px;
+    margin: clamp(10px, 2vh, 18px) 0 clamp(14px, 3vh, 24px);
     color: var(--text);
-    font-size: clamp(48px, 6vw, 76px);
+    font-size: clamp(36px, min(6vw, 9vh), 76px);
     line-height: 1.02;
     letter-spacing: -2px;
 }
@@ -44,9 +45,9 @@
 
 .hero-description {
     max-width: 520px;
-    margin-bottom: 32px;
+    margin-bottom: clamp(18px, 4vh, 32px);
     color: var(--text-secondary);
-    font-size: 18px;
+    font-size: clamp(15px, 2.2vh, 18px);
     line-height: 1.6;
 }
 
@@ -57,9 +58,13 @@
 }
 
 .primary-button,
-.secondary-button {
+.secondary-button,
+.hero-login {
     display: inline-block;
+    min-width: 140px;
     padding: 13px 20px;
+    text-align: center;
+    border: 1px solid var(--indigo-accent);
     border-radius: var(--radius-md);
     font-weight: var(--font-semibold);
     transition: transform 0.2s ease, background-color 0.2s ease;
@@ -70,10 +75,22 @@
     color: var(--surface);
 }
 
+
 .primary-button:hover {
     background-color: var(--indigo-light);
+    color: var(--indigo-accent);
     transform: translateY(-2px);
-    border: 1px solid var(--indigo-accent);
+}
+
+.hero-login {
+    background-color: var(--indigo-accent);
+    color: var(--indigo-accent);
+}
+
+.hero-login:hover {
+    background-color: var(--indigo-accent);
+    color: var(--surface);
+    transform: translateY(-2px);
 }
 
 .secondary-button {
@@ -93,8 +110,7 @@
 
 .hero-visual {
     position: relative;
-    min-height: 480px;
-
+    min-height: clamp(280px, 60vh, 480px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -103,8 +119,7 @@
 .project-preview {
     width: 100%;
     max-width: 470px;
-    padding: 30px;
-
+    padding: clamp(18px, 3.5vh, 30px);
     background-color: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -986,10 +1001,6 @@
         max-width: 700px;
     }
 
-    .hero-visual {
-        min-height: 430px;
-    }
-
     .project-cards {
         flex-direction: column;
     }
@@ -1014,10 +1025,6 @@
 
     .hero {
         padding: 60px 6%;
-    }
-
-    .hero h1 {
-        font-size: 48px;
     }
 
     .steps {
@@ -1047,7 +1054,6 @@
 @media (max-width: 480px) {
 
     .hero h1 {
-        font-size: 40px;
         letter-spacing: -1px;
     }
 
@@ -1063,10 +1069,6 @@
     .primary-button,
     .secondary-button {
         text-align: center;
-    }
-
-    .hero-visual {
-        min-height: 380px;
     }
 
     .project-preview {

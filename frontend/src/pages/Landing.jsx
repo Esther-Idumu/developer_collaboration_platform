@@ -35,7 +35,7 @@ function Landing() {
                                 SignUp
                             </Link>
 
-                            <Link to="/login" className="primary-button">
+                            <Link to="/login" className="hero-login">
                                 Login
                             </Link>
                         </div>
