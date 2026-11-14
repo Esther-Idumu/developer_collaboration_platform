@@ -24,6 +24,10 @@
     max-width: 620px;
 }
 
+.hero-text .nav-brand {
+    margin-bottom: clamp(12px, 3vh, 28px);
+}
+
 .eyebrow {
     color: var(--indigo-accent);
     font-size: 14px;
@@ -83,7 +87,7 @@
 }
 
 .hero-login {
-    background-color: var(--indigo-accent);
+    background-color: var(--surface);
     color: var(--indigo-accent);
 }
 
