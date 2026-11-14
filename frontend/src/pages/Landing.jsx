@@ -1,17 +1,21 @@
-import Navbar from "../components/Navbar/Navbar";
+import { Link } from "react-router-dom";
 import "./Landing.css";
+import "../components/Navbar/Navbar.css";
 
 function Landing() {
     return (
         <div>
-            <Navbar />
 
             {/* Hero */}
             <section className="hero">
                 <div className="hero-content">
 
                     <div className="hero-text">
-                        <p className="eyebrow">BUILD TOGETHER</p>
+                        <div className="nav-brand">
+                            <a href="/">
+                                <span>Dev</span>Link
+                            </a>
+                        </div>
 
                         <h1>
                             Find developers.
@@ -27,13 +31,13 @@ function Landing() {
                         </p>
 
                         <div className="hero-buttons">
-                            <a href="" className="primary-button">
-                                Find a project
-                            </a>
+                            <Link to="/signup" className="primary-button">
+                                SignUp
+                            </Link>
 
-                            <a href="" className="secondary-button">
-                                Find developers
-                            </a>
+                            <Link to="/login" className="primary-button">
+                                Login
+                            </Link>
                         </div>
                     </div>
 
@@ -287,7 +291,7 @@ function Landing() {
 
                         <div className="card-footer">
                             <span>2 developers needed</span>
-                            <a href="">View project →</a>
+                            <Link to="/login">View project →</Link>
                         </div>
                     </div>
 
@@ -309,7 +313,7 @@ function Landing() {
 
                         <div className="card-footer">
                             <span>1 developer needed</span>
-                            <a href="">View project →</a>
+                            <Link to="/login">View project →</Link>
                         </div>
                     </div>
 
@@ -331,15 +335,15 @@ function Landing() {
 
                         <div className="card-footer">
                             <span>3 developers needed</span>
-                            <a href="">View project →</a>
+                            <Link to="/login">View project →</Link>
                         </div>
                     </div>
 
                 </div>
 
-                <a href="" className="view-all">
+                <Link to="/login" className="view-all">
                     View all projects →
-                </a>
+                </Link>
             </section>
 
             {/* Developer Network */}
@@ -357,9 +361,9 @@ function Landing() {
                         interests that complement your ideas.
                     </p>
 
-                    <a href="" className="primary-button">
+                    <Link to="/login" className="primary-button">
                         Meet developers
-                    </a>
+                    </Link>
                 </div>
 
                 <div className="developer-cards">
@@ -409,13 +413,9 @@ function Landing() {
                 </p>
 
                 <div className="hero-buttons">
-                    <a href="" className="primary-button">
+                    <Link to="/signup" className="primary-button">
                         Get started
-                    </a>
-
-                    <a href="" className="secondary-button">
-                        Explore projects
-                    </a>
+                    </Link>
                 </div>
             </section>
 
